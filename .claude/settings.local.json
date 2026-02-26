@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m \"Deploy survey to GitHub Pages \\(clean\\)\")",
+      "Bash(export PATH=\"$PATH:/c/Program Files/GitHub CLI\")",
+      "Bash(git push origin gh-pages --force)",
+      "Bash(git checkout main)",
+      "Bash(git stash pop)",
+      "Bash(gh api repos/oussemaajal/FBO/pages -X POST -f \"source[branch]=gh-pages\" -f \"source[path]=/\")",
+      "Bash(gh repo edit oussemaajal/FBO --visibility public)",
+      "Bash(gh repo edit oussemaajal/FBO --visibility public --accept-visibility-change-consequences)",
+      "Bash(git add survey/js/config.js code/config.py)",
+      "Bash(git commit -m \"Configure data endpoint, bonus \\($1 USD\\), completion code, and GitHub Pages URL\")",
+      "Bash(git push)"
+    ]
+  }
+}
