@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit -m \"Fix gh-pages: restore all JS files\")",
+      "Bash(git push origin gh-pages)",
+      "Bash(gh api repos/oussemaajal/FBO/git/trees/gh-pages?recursive=1)",
+      "Bash(python -c \"import sys,json; tree=json.load\\(sys.stdin\\); [print\\(f[''path'']\\) for f in tree.get\\(''tree'',[]\\)]\")",
+      "Bash(python -c \":*)",
+      "Bash(source .env)",
+      "Bash(curl -s -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/filters/\")",
+      "Bash(python -c \"import sys,json; data=json.load\\(sys.stdin\\); results=data.get\\(''results'',data\\); [print\\(f\"\"{f.get\\(''filter_id'',''?''\\)} | {f.get\\(''title'',''?''\\)}\"\"\\) for f in results]\")",
+      "Bash(curl -s -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/filters/current-country-of-residence/\")",
+      "Bash(python -m json.tool)",
+      "Bash(curl -s -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/filters/approval_rate/\")",
+      "Bash(curl -s -X PATCH -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -H \"Content-Type: application/json\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\" -d '{:*)",
+      "Bash(curl -s -X GET -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\")",
+      "Bash(curl -s -X GET -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/studies/?project=$PROLIFIC_PROJECT_ID\")",
+      "Bash(curl -s -X GET -H \"Authorization: Token $PROLIFIC_API_TOKEN\" \"https://api.prolific.com/api/v1/studies/6990abe1ebc0b6a62def0bc5/\")",
+      "Bash(curl -s -X PATCH -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -H \"Content-Type: application/json\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\" -d '{\"\"eligibility_requirements\"\": []}')",
+      "Bash(curl -s -X PATCH -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -H \"Content-Type: application/json\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\" -d '{\"\"name\"\": \"\"Decision-Making Study\"\"}')",
+      "Bash(curl -v -X PATCH -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -H \"Content-Type: application/json\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\" -d '{\"\"name\"\": \"\"Decision-Making Study\"\"}')",
+      "Bash(curl -s -X GET -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -v \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\")",
+      "Bash(curl -s -X PUT -H \"Authorization: Token $PROLIFIC_API_TOKEN\" -H \"Content-Type: application/json\" \"https://api.prolific.com/api/v1/studies/69a069767639e75a7bc2b117/\" -d '{\"\"name\"\": \"\"Decision-Making Study\"\"}')",
+      "Bash(python -c:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(where python)",
+      "Bash(git stash)",
+      "Bash(git checkout gh-pages)",
+      "Bash(git checkout main -- survey/)",
+      "Bash(git add -A)",
+      "Bash(git commit -m \"Redesign: slider input, 9-trial NxK grid, canvas anti-AI digits\")"
+    ]
+  }
+}
