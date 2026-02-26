@@ -83,7 +83,7 @@ PROLIFIC_CONFIG = {
     'workspace_id_env': 'PROLIFIC_WORKSPACE_ID',
     'project_id_env': 'PROLIFIC_PROJECT_ID',
     'base_url': 'https://api.prolific.com/api/v1',
-    'completion_code': 'FBO_COMPLETE_2026',
+    'completion_code': 'C1DT2DOB',
 }
 
 # =============================================================================
@@ -91,10 +91,10 @@ PROLIFIC_CONFIG = {
 # =============================================================================
 SURVEY_CONFIG = {
     # URL where the survey is hosted (GitHub Pages or local)
-    'survey_url': '',  # Set after deploying, e.g. https://oussemaajal.github.io/fbo-survey/
+    'survey_url': 'https://oussemaajal.github.io/FBO/',
 
     # Google Sheets Apps Script endpoint for data collection
-    'data_endpoint': '',  # Set after deploying the Apps Script
+    'data_endpoint': 'https://script.google.com/macros/s/AKfycbyGF-wrCRMydHe726y-Iur7239XdLbJBD-BtGdFTUBgrsHRhFWB43SF_lyvEqbu4ZJ9/exec',
 }
 
 # =============================================================================
@@ -121,8 +121,8 @@ EXPERIMENT_PARAMS = {
 
     # Bonus
     'bonus': {
-        'base_amount_gbp': 0.50,
-        'penalty_per_unit': 0.10,
+        'base_amount_usd': 1.00,
+        'penalty_per_unit': 0.20,
         'floor': 0.00,
     },
 }

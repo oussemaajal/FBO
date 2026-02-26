@@ -44,12 +44,12 @@ var SURVEY_CONFIG = {
   // ── Data Endpoint ────────────────────────────────────────────────────
   // Google Sheets Apps Script URL. Set this after deploying the backend.
   // Leave empty string to skip submission (data logged to console instead).
-  dataEndpoint: "",
+  dataEndpoint: "https://script.google.com/macros/s/AKfycbyGF-wrCRMydHe726y-Iur7239XdLbJBD-BtGdFTUBgrsHRhFWB43SF_lyvEqbu4ZJ9/exec",
 
   // ── Prolific Integration ─────────────────────────────────────────────
   // Get the completion code from your Prolific study setup.
-  completionCode: "FBO_COMPLETE_2026",
-  completionUrl: "https://app.prolific.com/submissions/complete?cc=FBO_COMPLETE_2026",
+  completionCode: "C1DT2DOB",
+  completionUrl: "https://app.prolific.com/submissions/complete?cc=C1DT2DOB",
 
   // ── Between-Subjects Conditions ──────────────────────────────────────
   // Participants are assigned to one condition based on a hash of their
@@ -61,9 +61,9 @@ var SURVEY_CONFIG = {
   // bonus = max(floor, baseAmount - penaltyPerUnit * |guess - trueAverage|)
   bonus: {
     enabled: true,
-    currency: "GBP",
-    baseAmount: 0.50,
-    penaltyPerUnit: 0.10,
+    currency: "USD",
+    baseAmount: 1.00,
+    penaltyPerUnit: 0.20,
     floor: 0.00,
     selectionMethod: "random_trial"
   },
@@ -102,7 +102,7 @@ var SURVEY_CONFIG = {
             "involving numbers and answer a few questions afterward.</p>" +
             "<p><strong>Time:</strong> Approximately 8-10 minutes.</p>" +
             "<p><strong>Compensation:</strong> You will receive your Prolific payment " +
-            "plus an accuracy-based bonus of up to GBP 0.50.</p>" +
+            "plus an accuracy-based bonus of up to $1.00.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
             "We collect your Prolific ID only to process payment.</p>" +
@@ -211,7 +211,7 @@ var SURVEY_CONFIG = {
         "<p>At the end of the study, one round will be randomly selected. " +
         "Your bonus depends on <strong>how close your guess was to the true " +
         "average</strong> in that round. The closer you are, the more you earn " +
-        "(up to GBP 0.50).</p>" +
+        "(up to $1.00).</p>" +
 
         "<p style='padding:16px; background:#f0f4ff; border-radius:8px; " +
         "border-left:4px solid var(--color-primary);'>" +
