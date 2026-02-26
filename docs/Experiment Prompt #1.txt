@@ -1,0 +1,53 @@
+INSTRUCTIONS
+You are participating in a study on ESG (Environmental, Social, and Governance) evaluation.
+
+Background
+ESG rating agencies evaluate companies on three pillars—Environmental (E), Social (S), and Governance (G)—each scored from 0 to 100. The overall ESG score is the arithmetic mean of the three pillar scores:
+
+Overall ESG Score = (E score + S score + G score) / 3​
+
+Pillar score availability
+
+The pillar scores shown in the profile are computed using the company’s disclosures and a survey questionnaire sent to the company. When there is enough information to score a given pillar, we report its score below. If there is not enough information to score a pillar, it is shown as “_” (underscore).
+
+Your Task
+Read the company profile and estimate the company’s overall ESG score (0–100).
+
+Payment
+
+Base payment: $3
+
+
+Bonus: Up to $5, based on accuracy
+
+
+You lose $0.25 from your bonus for every point your estimate is away from the true score
+
+
+Minimum payment: $3
+
+
+Example
+If the true score is 50 and you guess 54, you are 4 points off, so your bonus is $5 − (4 × $0.25) = $4, and your total payment is $7.
+
+The bonus will be sent after the completion of this survey.
+
+COMPANY PROFILE: VERIDIAN MANUFACTURING INC.
+Industry: Industrial Manufacturing
+Headquarters: Ohio, USA
+Employees: 4,200
+Annual Revenue: $890 million
+Business: Produces precision components for the automotive and aerospace industries.
+
+ESG PILLAR SCORES (0–100)
+(Scores are shown when available; otherwise “_”.)
+
+Environmental (E): _
+
+Social (S): 64
+
+Governance (G): 71
+
+Reference: The industry average overall ESG score for industrial manufacturing is 58.
+
+YOUR RESPONSE: Your estimate of Veridian’s overall ESG score (0–100) (average across E, S, and G): ___
