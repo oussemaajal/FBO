@@ -133,3 +133,57 @@ The survey is now deployed and ready for review. The full stimulus grid has sati
 variation: single disclosures of 7, 8, or 9; pairs like [9,6], [8,7], [10,7]; triples
 like [10,7,6], [9,8,5], [8,7,6]. Each trial feels distinct to the participant, which
 should reduce the mechanical feeling of doing the same task nine times.
+
+---
+
+## 2026-02-26 (continued, session 4)
+
+**Within-subjects conversion: everyone sees both formats.**
+
+The biggest structural change so far. Oussema decided that the between-subjects design
+(participants see either clean or explicit) should become within-subjects: every participant
+sees all 9 trials twice, once in each format, for 18 trials total. The "condition" is now
+just the order -- clean_first or explicit_first -- which lets us test for order effects
+while getting paired comparisons within each participant.
+
+The motivation is straightforward. A between-subjects design requires large samples to
+detect differences because you're comparing different people. A within-subjects design
+uses each person as their own control: the same participant guesses the same trial under
+both display formats, so any difference is cleanly attributable to the format change rather
+than to individual variation in strategic reasoning ability. The cost is a longer survey
+(roughly doubled), but the statistical gains are substantial.
+
+The implementation required touching all four core files. In config.js, the single trial
+block became two blocks with a transition page between them. The transition page explains
+the format change with condition-specific text -- if you started with the clean format,
+it tells you that Part 2 will show all slots with [Not shown] markers, and vice versa.
+The instructions page was also redesigned: instead of showing only the format you'll use
+(which made sense in between-subjects), it now shows both formats side by side so
+participants understand what they'll encounter.
+
+In engine.js, the buildPageSequence function was substantially rewritten. Each trial block
+now generates two pages per trial instead of one: an N-intro splash page followed by the
+actual trial page. The N-intro page is a new design element that shows, in large 96px font,
+how many numbers the Sender received in that round. This addresses Oussema's concern that
+participants -- especially in the clean condition where hidden numbers are invisible --
+might not notice when N changes from 4 to 6 to 8 across trials. Making N its own prominent
+page ensures it registers before the participant sees the disclosed numbers and slider.
+
+The block structure also required new navigation logic. Block boundaries are tracked so
+participants can't go back from Block 2 to Block 1 (which would let them revise Block 1
+answers after seeing the alternative format). The transition page itself blocks backward
+navigation and shows a "Begin Part 2" button instead of the usual "Next."
+
+Data collection was updated to key trial guesses by the composite page ID (like "t1_b1"
+or "t1_b2") rather than just the trial ID, since the same trial now appears twice. Each
+entry records which block it belongs to and which display format was used, making the
+analysis straightforward: for each trial, compare the guess under clean vs explicit format,
+with block/order as controls.
+
+The survey now has 46 pages total: 5 pre-trial pages (welcome, consent, two instructions,
+comprehension), 18 Block 1 pages (9 N-intro + 9 trial), 1 transition page, 18 Block 2
+pages, and 4 post-trial pages (attention, post-task questions, demographics, debrief).
+The estimated duration went from 8-10 to 12-15 minutes.
+
+Both conditions were tested locally and the survey was deployed to GitHub Pages. Ready for
+Oussema to walk through and confirm the experience feels right before we run a pilot.

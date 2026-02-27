@@ -247,3 +247,105 @@ for Oussema to review live at https://oussemaajal.github.io/FBO/
 1. Oussema reviews the live survey and gives feedback
 2. Run full pilot (n=80) or move to full study (n=240)
 3. Build analysis pipeline for 9-trial NxK design
+
+---
+
+## 2026-02-26 | Session 4: Within-subjects conversion + N-intro pages
+
+**Goal:** Convert the experiment from between-subjects to within-subjects with
+counterbalanced order, and add N-intro splash pages before each trial.
+
+**Context from Oussema:**
+- "For the same participant, they go through both the clean and explicit situations,
+  but it's just a group go through clean then explicit and the other group goes through
+  it the other way around (and those are different conditions)."
+- "The number of secret numbers in both conditions (but especially in the clean condition)
+  is very unclear, so I'd recommend that we state the number of secret numbers the sender
+  gets on its own page that says, the sender got N secret numbers (the N in big font)."
+- When asked about trial count (9 split vs 18 total), chose 18 trials (all 9 x both formats).
+
+**What happened:**
+
+1. **config.js changes:**
+   - Conditions: `["clean", "explicit"]` -> `["clean_first", "explicit_first"]`
+   - Single trial_block replaced with two trial_blocks (block: 1 and block: 2) with
+     identical 9-trial stimulus grids. Each block gets independently seeded randomization.
+   - New transition page between blocks: explains the format change with condition-specific
+     text (uses `<!--if:clean_first-->` / `<!--if:explicit_first-->` templates).
+   - Instructions page 2 redesigned: shows BOTH format examples (Format A: Numbers only,
+     Format B: All slots visible) instead of condition-specific ones. All participants see
+     both since they'll experience both formats.
+   - Time estimates updated: "8-10 minutes" -> "12-15 minutes" (welcome + consent pages).
+   - Version bumped to "0.2.0-within".
+
+2. **engine.js changes (~13 modifications):**
+   - New `getDisplayFormat(block)`: Maps (condition, block) -> 'clean' or 'explicit'.
+     clean_first + block 1 = clean, clean_first + block 2 = explicit (and vice versa).
+   - `buildPageSequence()` rewrite: For each trial_block, reads `page.block`, computes
+     displayFormat via getDisplayFormat(), uses block-specific seed for shuffling
+     (`hashString(pid + '_trials_block' + block)`). Inserts TWO pages per trial:
+     trial_intro (N-intro splash) + trial page. Records block boundary indices. Also
+     handles new 'transition' page type as a block boundary.
+   - New `renderTrialIntro(page)`: Shows "Round X of 9 -- Part Y" subtitle + centered
+     N in large font (96px) with labels "In this round, the Sender received / [N] / numbers".
+   - New `renderTransition(page)`: Processes condition templates same as renderInstructions.
+   - `renderPage()` updated: Added 'trial_intro' and 'transition' cases to page type switch.
+     Back button hidden at block boundaries and on transition pages. Next button shows
+     "Begin Part 2" on transition pages.
+   - `renderTrial()` updated: Uses `page.displayFormat` instead of `this.condition` to
+     decide clean vs explicit rendering. Canvas IDs include block suffix (`_b1` / `_b2`)
+     for uniqueness. Subtitle shows "Part X".
+   - `collectPageData()` updated: Trial guesses keyed by `page.id` (e.g., `t1_b1`) instead
+     of `page.trial.id`. Each entry includes `trialId`, `block`, `displayFormat` fields.
+   - `getAllData()` updated: Adds `block1Format` and `block2Format` to submitted data.
+   - `prevPage()` updated: Checks blockBoundaryIndices, refuses to go back past boundaries.
+   - Constructor: Added `this.blockBoundaryIndices = []`.
+
+3. **survey.css changes:**
+   - New `.n-intro-display`, `.n-intro-number` (96px font, 800 weight, primary-dark color),
+     `.n-intro-label` (18px, secondary color) styles.
+   - Responsive rule: `.n-intro-number` -> 72px at max-width 600px.
+
+4. **config.py changes:**
+   - `'conditions': ['clean', 'explicit']` -> `['clean_first', 'explicit_first']`
+   - Updated comments to reflect within-subjects design.
+
+5. **Verified locally with both conditions:**
+   - PID "alice" -> clean_first: Block 1 = clean format, Block 2 = explicit format
+   - PID "bob" -> explicit_first: Block 1 = explicit format, Block 2 = clean format
+   - 46 total pages (welcome, consent, 2 instructions, comprehension, 18 Block 1 pages,
+     transition, 18 Block 2 pages, attention, posttask, demographics, debrief)
+   - N-intro pages display correctly with large N
+   - Transition page shows correct condition-specific text
+   - Block boundaries enforced (no back button at block starts or transition)
+   - 18 trial guesses in data payload with correct block/displayFormat metadata
+   - Bonus calculation works with 18 entries
+   - No console errors
+
+6. **Deployed to gh-pages**: Committed on main, copied files to gh-pages, pushed both.
+
+**Page structure (46 pages):**
+```
+welcome -> consent -> instructions_1 -> instructions_2 -> comprehension
+-> [9x (trial_intro + trial)] Block 1  (18 pages)
+-> transition
+-> [9x (trial_intro + trial)] Block 2  (18 pages)
+-> attention_check -> posttask -> demographics -> debrief
+```
+
+**Data payload structure:**
+- `condition`: "clean_first" or "explicit_first"
+- `block1Format`: "clean" or "explicit"
+- `block2Format`: "explicit" or "clean"
+- `trialGuesses`: 18 entries keyed by page.id (e.g., "t1_b1"), each with:
+  `{guess, trueAverage, N, k, disclosed, trialId, block, displayFormat}`
+
+**Where this leaves the project:**
+Within-subjects survey deployed to gh-pages. Ready for Oussema to review at
+https://oussemaajal.github.io/FBO/
+
+**Next session should probably:**
+1. Oussema reviews the live within-subjects survey
+2. Run full pilot (n=80) or move to full study (n=240)
+3. Build analysis pipeline for within-subjects 18-trial design
+4. Consider whether the N-intro page text/styling needs adjustment

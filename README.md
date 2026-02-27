@@ -8,14 +8,23 @@ Do people suffer from "non-disclosure neglect" -- failing to mentally represent 
 
 ## Experiment Design
 
-A between-subjects online experiment recruited via Prolific with a custom-built web survey hosted on GitHub Pages.
+A within-subjects online experiment recruited via Prolific with a custom-built web survey hosted on GitHub Pages.
 
-### Conditions
+### Display Formats (within-subjects)
 
-| Condition | Description |
-|-----------|-------------|
+Every participant sees both formats across two blocks of 9 trials each (18 trials total):
+
+| Format | Description |
+|--------|-------------|
 | `clean` | Participants see only the disclosed numbers (no indication of how many were withheld) |
 | `explicit` | All N slots shown -- disclosed numbers plus "[Not shown]" markers for hidden ones |
+
+### Conditions (order counterbalancing)
+
+| Condition | Block 1 | Block 2 |
+|-----------|---------|---------|
+| `clean_first` | Clean format | Explicit format |
+| `explicit_first` | Explicit format | Clean format |
 
 ### Sample Sizes
 
@@ -32,21 +41,25 @@ Participants play an "estimation game" against a strategic Sender who:
 3. Chooses which numbers to reveal
 
 The participant guesses the true average of ALL N numbers (including hidden ones).
-Accuracy-based bonus: up to GBP 0.50 per participant.
+Accuracy-based bonus: up to $1.00 per participant.
 
 ### Within-Subjects Variation
 
 - N in {4, 6, 8} (set size)
 - k in {1, 2, 3} (number disclosed)
-- 9 trials per participant (3x3 NxK grid), randomized order
+- 9 trials per block x 2 blocks = 18 trials per participant
+- N-intro splash page before each trial (shows N prominently)
 - Disclosed values vary across trials (always top-k, strategic sender)
+- Randomized trial order within each block (independently seeded)
 
 ## Current Status
 
-**Phase:** Survey deployed, pilot (n=10) completed, redesign deployed
+**Phase:** Within-subjects survey deployed, ready for review
 
 **What's built:**
 - Custom web survey engine (config-driven, generic, reusable)
+- Within-subjects design: 18 trials (9 per format), counterbalanced order
+- N-intro splash pages before each trial (prominent N display)
 - Professional UI with responsive design, slider input for guesses
 - Canvas-rendered digits (anti-AI: no text in DOM)
 - Bot/AI detection (honeypot, invisible instruction, behavioral tracking)
@@ -60,9 +73,9 @@ Accuracy-based bonus: up to GBP 0.50 per participant.
 - Deployed to GitHub Pages: https://oussemaajal.github.io/FBO/
 
 **What's next:**
-1. Review redesigned survey
+1. Oussema reviews within-subjects survey at https://oussemaajal.github.io/FBO/
 2. Run full pilot (n=80) or proceed to full study (n=240)
-3. Build analysis pipeline for 9-trial NxK design
+3. Build analysis pipeline for within-subjects 18-trial design
 
 ## Directory Structure
 
