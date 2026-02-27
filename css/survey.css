@@ -560,6 +560,48 @@ body {
   margin: 8px 0;
 }
 
+/* ---------- Sender Number Cards Visual ---------- */
+.sender-visual {
+  text-align: center;
+  margin: 24px 0;
+}
+
+.sender-visual-label {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  margin: 12px 0;
+}
+
+.sender-number-cards {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.sender-number-card {
+  width: 72px;
+  height: 88px;
+  background: #fff;
+  border: 2px solid var(--color-primary);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.15);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.sender-number-card.card-hidden {
+  border-color: var(--color-border);
+  background: var(--color-input-bg);
+  color: var(--color-text-muted);
+  font-size: 24px;
+  font-weight: 400;
+}
+
 /* ---------- Digit Canvas (anti-AI) ---------- */
 .digit-canvas {
   display: inline-block;
@@ -896,6 +938,16 @@ body {
 
   .n-intro-number {
     font-size: 72px;
+  }
+
+  .sender-number-card {
+    width: 60px;
+    height: 74px;
+    font-size: 22px;
+  }
+
+  .sender-number-card.card-hidden {
+    font-size: 20px;
   }
 
   .bonus-amount {

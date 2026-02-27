@@ -114,10 +114,10 @@ var SURVEY_CONFIG = {
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // INSTRUCTIONS -- Page 1: The Setup
+    // INSTRUCTIONS 1a: The Guessing Game (intro)
     // ──────────────────────────────────────────────────────────────────
     {
-      id: "instructions_1",
+      id: "instructions_1a",
       type: "instructions",
       title: "The Guessing Game",
       body:
@@ -126,13 +126,29 @@ var SURVEY_CONFIG = {
 
         "<p>The Senders are <strong>real human participants</strong> who already played " +
         "their part in an earlier session. Their choices have been recorded, and you " +
-        "are now seeing the results of their decisions.</p>" +
+        "are now seeing the results of their decisions.</p>",
+      minTimeSeconds: 15
+    },
 
-        "<h3 style='margin-top:28px;'>How the game works</h3>" +
-
+    // ──────────────────────────────────────────────────────────────────
+    // INSTRUCTIONS 1b: How the Game Works (3 steps + visual)
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "instructions_1b",
+      type: "instructions",
+      title: "How the Game Works",
+      body:
         "<p><strong>Step 1:</strong> A random number generator gives the Sender a set of " +
-        "numbers. Each number is between <strong>1 and 10</strong>. The set size varies " +
-        "across rounds (sometimes 4 numbers, sometimes 6 or 8).</p>" +
+        "secret numbers. Each number is between <strong>1 and 10</strong>. The set size " +
+        "varies across rounds (sometimes 2 numbers, sometimes 4, 6, or 8).</p>" +
+
+        "<div class='sender-visual'>" +
+          "<div class='sender-visual-label'>Example: The Sender receives 2 secret numbers</div>" +
+          "<div class='sender-number-cards'>" +
+            "<div class='sender-number-card'>4</div>" +
+            "<div class='sender-number-card'>6</div>" +
+          "</div>" +
+        "</div>" +
 
         "<p><strong>Step 2:</strong> The Sender looks at their numbers and decides which " +
         "ones to <strong>reveal to you</strong>. They can choose to show you all of them, " +
@@ -140,78 +156,87 @@ var SURVEY_CONFIG = {
 
         "<p><strong>Step 3:</strong> You see what the Sender chose to reveal, and your job " +
         "is to <strong>guess the average of ALL the numbers</strong> the Sender received " +
-        "-- including any they chose not to show you.</p>" +
+        "-- including any they chose not to show you.</p>",
+      minTimeSeconds: 20
+    },
 
-        "<h3 style='margin-top:28px;'>Why does the Sender care?</h3>" +
-
+    // ──────────────────────────────────────────────────────────────────
+    // INSTRUCTIONS 1c: The Sender's Goal (incentives)
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "instructions_1c",
+      type: "instructions",
+      title: "The Sender's Goal",
+      body:
         "<p>The Sender gets paid based on <strong>your guess</strong>. The higher you guess, " +
         "the more the Sender earns. So the Sender has an incentive to make you " +
         "<strong>overestimate</strong> the true average.</p>" +
 
         "<p>Think about what this means: if the Sender has some high numbers and some low " +
         "numbers, what would they choose to show you?</p>",
-      minTimeSeconds: 30
+      minTimeSeconds: 15
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // INSTRUCTIONS -- Page 2: Example & Bonus
+    // INSTRUCTIONS -- Format Explanation (condition-specific)
     // ──────────────────────────────────────────────────────────────────
     {
-      id: "instructions_2",
+      id: "instructions_format",
       type: "instructions",
-      title: "An Example",
+      title: "What You Will See",
       body:
-        "<p>Suppose a Sender receives <strong>4 numbers</strong> from the random " +
-        "generator: <strong>1, 4, 5, and 10</strong>. The true average is " +
+        "<p>Let's use a quick example. Suppose the Sender receives <strong>2 numbers</strong>: " +
+        "<strong>4</strong> and <strong>6</strong>. The true average is " +
         "<strong>5.00</strong>.</p>" +
 
         "<p>The Sender wants you to guess high, so they decide to show you " +
-        "<strong>only the 10</strong> and hide the rest.</p>" +
+        "<strong>only the 6</strong> and hide the 4.</p>" +
 
-        "<p>During this study, you will see the Sender's choices presented in " +
-        "<strong>two different formats</strong>. Here is how each one looks:</p>" +
-
-        // ── Format A: Numbers only (clean) ──
-        "<h3 style='margin-top:24px;'>Format A: Numbers only</h3>" +
+        "<!--if:clean_first-->" +
+        "<p>Here is how the Sender's choice will be presented to you:</p>" +
         "<div class='trial-card'>" +
           "<div class='trial-header'>The Sender chose to show you:</div>" +
           "<div class='trial-disclosed-values-row'>" +
-            "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
+            "<canvas class='digit-canvas' data-d='6' width='36' height='48'></canvas>" +
           "</div>" +
         "</div>" +
+        "<p>You see only the number(s) the Sender chose to reveal. In this case, " +
+        "just the <strong>6</strong>. The Sender had 2 numbers total, but chose to show " +
+        "you only one of them.</p>" +
+        "<!--endif:clean_first-->" +
 
-        // ── Format B: All slots visible (explicit) ──
-        "<h3 style='margin-top:24px;'>Format B: All slots visible</h3>" +
+        "<!--if:explicit_first-->" +
+        "<p>Here is how the Sender's choice will be presented to you:</p>" +
         "<div class='trial-card'>" +
           "<div class='trial-header'>The Sender's numbers:</div>" +
           "<div class='trial-slot'>" +
             "<span class='trial-number-label'>Number 1:</span>" +
-            "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
+            "<canvas class='digit-canvas' data-d='6' width='36' height='48'></canvas>" +
           "</div>" +
           "<div class='trial-slot'>" +
             "<span class='trial-number-label'>Number 2:</span>" +
             "<span class='trial-hidden-value'>[Not shown]</span>" +
           "</div>" +
-          "<div class='trial-slot'>" +
-            "<span class='trial-number-label'>Number 3:</span>" +
-            "<span class='trial-hidden-value'>[Not shown]</span>" +
-          "</div>" +
-          "<div class='trial-slot'>" +
-            "<span class='trial-number-label'>Number 4:</span>" +
-            "<span class='trial-hidden-value'>[Not shown]</span>" +
-          "</div>" +
         "</div>" +
+        "<p>You can see all <strong>2 slots</strong> -- the number the Sender revealed " +
+        "(<strong>6</strong>) and a <em>[Not shown]</em> marker for the one they hid.</p>" +
+        "<!--endif:explicit_first-->" +
 
-        "<p>Both formats show the same information -- the Sender has 4 numbers " +
-        "and chose to reveal only the <strong>10</strong>. The only difference " +
-        "is how it is displayed.</p>" +
+        "<p>Your task is to guess the <strong>average of all 2 numbers</strong>. " +
+        "In this example, the true average is (4 + 6) / 2 = <strong>5.00</strong>. " +
+        "But of course, you would not know the hidden number, so you have to use " +
+        "your judgement.</p>",
+      minTimeSeconds: 20
+    },
 
-        "<p>In this example, if you guessed <strong>5.00</strong>, you would be " +
-        "exactly right! But of course, you would not know the hidden numbers, " +
-        "so you have to use your judgement.</p>" +
-
-        "<h3 style='margin-top:28px;'>Your bonus</h3>" +
-
+    // ──────────────────────────────────────────────────────────────────
+    // INSTRUCTIONS -- Bonus
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "instructions_bonus",
+      type: "instructions",
+      title: "Your Bonus",
+      body:
         "<p>At the end of the study, one round will be randomly selected. " +
         "Your bonus depends on <strong>how close your guess was to the true " +
         "average</strong> in that round. The closer you are, the more you earn " +
@@ -222,7 +247,7 @@ var SURVEY_CONFIG = {
         "<strong>Key takeaway:</strong> The Sender benefits from making you guess " +
         "too high. Think carefully about <em>why</em> they chose to show you " +
         "certain numbers and not others.</p>",
-      minTimeSeconds: 30
+      minTimeSeconds: 10
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -235,23 +260,23 @@ var SURVEY_CONFIG = {
       description: "<p>Before we begin, let's make sure you understand the game.</p>",
       questions: [
         {
-          prompt: "A Sender has 4 numbers: 1, 4, 5, 10. They choose to show you only: <strong>10</strong>. " +
-                  "What is the Sender's TRUE average of all 4 numbers?",
+          prompt: "A Sender has 2 numbers: 4 and 6. They choose to show you only: <strong>6</strong>. " +
+                  "What is the Sender's TRUE average of all 2 numbers?",
           type: "radio",
           correct: "5.00",
           options: [
-            { value: "10.00", label: "10.00" },
+            { value: "6.00", label: "6.00" },
             { value: "5.00", label: "5.00" },
-            { value: "7.50", label: "7.50" },
+            { value: "4.00", label: "4.00" },
             { value: "5.50", label: "5.50" }
           ],
-          remedialText: "The correct answer is 5.00. The Sender has four numbers: 1, 4, 5, and 10. " +
-                        "The average is (1 + 4 + 5 + 10) / 4 = 20 / 4 = 5.00. " +
-                        "Notice that the Sender showed you only the 10 (the highest number) " +
+          remedialText: "The correct answer is 5.00. The Sender has two numbers: 4 and 6. " +
+                        "The average is (4 + 6) / 2 = 10 / 2 = 5.00. " +
+                        "Notice that the Sender showed you only the 6 (the higher number) " +
                         "to make you think the average is higher than it really is."
         },
         {
-          prompt: "Why might the Sender have shown only the 10?",
+          prompt: "Why might the Sender have shown only the 6?",
           type: "radio",
           correct: "overestimate",
           options: [
@@ -260,7 +285,7 @@ var SURVEY_CONFIG = {
             { value: "required", label: "They had to show that number" }
           ],
           remedialText: "The Sender's goal is to make you overestimate the average. " +
-                        "They show you high numbers and hide the low ones."
+                        "They show you higher numbers and hide the lower ones."
         }
       ],
       maxAttempts: 2,
@@ -311,20 +336,39 @@ var SURVEY_CONFIG = {
         "format</strong>.</p>" +
 
         "<!--if:clean_first-->" +
-        "<p>In Part 1, you only saw the numbers the Sender chose to reveal. " +
-        "In Part 2, you will see <strong>all slots</strong> -- the revealed numbers " +
-        "plus <em>[Not shown]</em> markers for the hidden ones.</p>" +
+        "<p>Using the same example as before -- the Sender has 2 numbers (4 and 6) " +
+        "and shows you only the 6 -- here is how it will now look:</p>" +
+        "<div class='trial-card'>" +
+          "<div class='trial-header'>The Sender's numbers:</div>" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 1:</span>" +
+            "<canvas class='digit-canvas' data-d='6' width='36' height='48'></canvas>" +
+          "</div>" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 2:</span>" +
+            "<span class='trial-hidden-value'>[Not shown]</span>" +
+          "</div>" +
+        "</div>" +
+        "<p>You can now see <strong>all slots</strong> -- the number the Sender revealed " +
+        "(<strong>6</strong>) and a <em>[Not shown]</em> marker for the one they hid.</p>" +
         "<!--endif:clean_first-->" +
 
         "<!--if:explicit_first-->" +
-        "<p>In Part 1, you saw all slots with <em>[Not shown]</em> markers for " +
-        "hidden numbers. In Part 2, you will see <strong>only the numbers</strong> " +
-        "the Sender chose to reveal.</p>" +
+        "<p>Using the same example as before -- the Sender has 2 numbers (4 and 6) " +
+        "and shows you only the 6 -- here is how it will now look:</p>" +
+        "<div class='trial-card'>" +
+          "<div class='trial-header'>The Sender chose to show you:</div>" +
+          "<div class='trial-disclosed-values-row'>" +
+            "<canvas class='digit-canvas' data-d='6' width='36' height='48'></canvas>" +
+          "</div>" +
+        "</div>" +
+        "<p>You now see <strong>only the number(s)</strong> the Sender chose to reveal -- " +
+        "without any markers for hidden numbers.</p>" +
         "<!--endif:explicit_first-->" +
 
         "<p>The game itself is identical -- the same Sender incentives, the same " +
         "types of numbers. Only the display format changes.</p>",
-      minTimeSeconds: 10
+      minTimeSeconds: 15
     },
 
     // ──────────────────────────────────────────────────────────────────
