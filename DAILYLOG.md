@@ -232,3 +232,46 @@ encountering it in Block 2, without having to figure it out from the first trial
 The survey now has 49 pages (up from 46). No engine.js changes were needed -- the existing
 condition template system and canvas rendering handled everything. Deployed to GitHub Pages
 and ready for Oussema to review.
+
+**Iterative refinements: the devil is in the sequencing.**
+
+Oussema reviewed the survey and spotted three issues that all relate to the same theme: how
+the sequence of information affects participant behavior.
+
+First, the N-intro pages (which announce "the Sender received N secret numbers" before each
+trial) were displaying the N value in a stacked, three-line layout with the same blue color
+used for disclosed numbers. This was asking for confusion -- a participant might see a big
+blue "4" and think it's a disclosed value, not the set size. The fix was simple: put
+everything on one line ("In this round, the Sender received 4 secret numbers") and color the
+number orange instead of blue. The inline layout makes the sentence read naturally, and the
+orange creates a visual category distinct from the blue of disclosed values.
+
+Second, a more fundamental design question: should all participants see set sizes in the same
+order? In the original design, trial order within each block was fully randomized. But this
+ignores a potential order effect. If you see N=4 first (small sets, few hidden numbers), you
+might develop certain expectations that carry over differently than if you started with N=8
+(large sets, many hidden numbers). The solution was to expand the design from 2 conditions to
+4, creating a 2x2: format order (clean_first vs explicit_first) crossed with N order
+(ascending 4,6,8 vs descending 8,6,4). Within each N level, the three trials (k=1,2,3) are
+still shuffled with a seeded PRNG, but the N levels themselves follow a fixed progression.
+This gives us clean identification of any order effects while keeping the within-N-level
+variety that prevents participants from predicting what's next.
+
+Third, and most subtle: when trials are sorted by N level, you get boundaries where one
+N-group ends and the next begins. If the last trial of N=4 happens to be k=2 (showing [9,6])
+and the first trial of N=6 is also k=2 (showing [8,7]), the participant sees two consecutive
+trials with the same number of disclosed values and very similar numbers. This might signal
+"the game changed -- same disclosure, bigger set -- I should adjust my answer." The participant
+should be responding to each trial fresh, not building a narrative about how consecutive trials
+relate. The fix ensures that at every N-level boundary, the k value differs, by checking after
+the within-group shuffle and swapping if needed.
+
+Finally, Oussema raised a concern about the stimulus values themselves. All 9 trials had high
+disclosed values (7-10) because the strategic sender always shows the top-k from a set of
+numbers that happened to include high values. But if every disclosed number is obviously above
+the midpoint, participants might just anchor on 5 (the unconditional average of 1-10) regardless
+of what they see. The fix was to redesign 3 of the 9 trials so the sender's underlying draw is
+lower -- disclosed values of [6,5], [5], and [5,4] instead of the original [9,6], [7], and
+[10,7]. The sender is still strategic (showing top-k), but now participants encounter trials
+where the highest available number is only 5 or 6. This breaks the "everything shown is high"
+pattern and forces genuine engagement with each trial's specific numbers.

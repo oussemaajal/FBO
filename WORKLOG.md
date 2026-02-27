@@ -438,3 +438,79 @@ only right before its block. Simpler N=2 example used consistently throughout.
 1. Oussema reviews the live survey at https://oussemaajal.github.io/FBO/
 2. Run full pilot (n=80) or proceed to full study (n=240)
 3. Build analysis pipeline for within-subjects 18-trial design
+
+---
+
+## 2026-02-27 | Session 6: N-intro fix, N-order conditions, boundary fix, stimulus variation
+
+**Goal:** Three iterative improvements based on Oussema's feedback during survey review:
+1. Fix the N-intro page layout to prevent confusion between N and disclosed count
+2. Add N-order counterbalancing (ascending vs descending set sizes)
+3. Prevent sequential trials with similar disclosed values at N-level boundaries
+4. Vary disclosed values across trials (some low, some high)
+
+**What happened:**
+
+1. **N-intro display fix (engine.js + survey.css):**
+   - Changed renderTrialIntro from a 3-line stacked layout (label / big N / label) to inline:
+     `"In this round, the Sender received <span class='n-intro-number'>N</span> secret numbers"`
+   - Changed `.n-intro-number` from `--color-primary-dark` (blue, same as disclosed values)
+     to `--color-warning` (orange, `rgb(247, 127, 0)`), 64px inline, font-weight 800.
+   - Reasoning: stacked layout risked participants confusing the N value with a disclosed number.
+
+2. **N-order conditions -- 2x2 design (config.js + engine.js + config.py):**
+   - Conditions expanded from 2 to 4:
+     `["clean_first_asc", "clean_first_desc", "explicit_first_asc", "explicit_first_desc"]`
+   - New helper methods on SurveyEngine:
+     - `getFormatOrder()` -- returns `'clean_first'` or `'explicit_first'` for template matching
+     - `getNOrder()` -- returns `'asc'` or `'desc'`
+   - `buildPageSequence()` rewritten: groups trials by N, sorts N levels (asc or desc),
+     seeded shuffle within each N level.
+   - Template matching in `renderInstructions()` and `renderTransition()` updated to use
+     `getFormatOrder()` instead of raw condition string (since `'clean_first_asc'` doesn't
+     match `<!--if:clean_first-->`).
+   - `getAllData()` now includes `formatOrder` and `nOrder` in submitted data.
+   - `config.py` updated: 4 conditions, 60 per condition = 240 total.
+
+3. **K-boundary fix (engine.js):**
+   - Problem: when trials are sorted by N level, at the boundary between consecutive N-levels,
+     trials with the same k value could appear back-to-back. E.g., N=6 k=2 with disclosed [8,7]
+     followed by N=8 k=2 with disclosed [10,7] -- nearly identical disclosed sets that might
+     make participants think they should change strategy.
+   - Fix: after shuffling within each N level, check if the last trial of the previous group
+     has the same k as the first trial of the next group. If so, swap the first trial with
+     another in the group that has a different k.
+   - Verified: all 4 test PIDs (alice, bob, charlie, dave) produce trial sequences with
+     no k-clash at any N-level boundary, in both blocks.
+
+4. **Stimulus variation -- lower disclosed values (config.js + config.py):**
+   - Problem: all 9 trials had high disclosed values (7-10) because sender always picks
+     top-k from a high-average draw. Participants might develop a "just guess 5" heuristic
+     (the unconditional mean of 1-10) regardless of what they see.
+   - Fix: redesigned 3 of the 9 trials to have lower underlying draws, so disclosed values
+     are <= 6. Sender is still strategic (showing top-k), but the numbers happen to be lower.
+   - Changed trials (one per N level):
+     - t2 (N=4, k=2): [9,6] -> [6,5], hidden [2,1], trueAvg 3.50
+     - t4 (N=6, k=1): [7] -> [5], hidden [4,3,2,2,1], trueAvg 2.83
+     - t8 (N=8, k=2): [10,7] -> [5,4], hidden [4,3,2,2,1,1], trueAvg 2.75
+   - Spread across all N levels (N=4, N=6, N=8) and different k values (k=2, k=1, k=2).
+   - The 6 unchanged trials still have disclosed values 7-10, creating a natural mix.
+   - Pilot stimuli (STIMULI_PILOT) unchanged -- they use the "corners" (t1, t3, t7, t9)
+     which were not modified.
+
+**Verified:**
+- All 4 conditions tested via preview tool (alice, bob, charlie, dave)
+- N-level boundary k-clash fix works for all PIDs and both blocks
+- Instruction flow (5 pages), N-intro (inline, orange), format templates, transition all render correctly
+- New stimulus values load and render (canvas digits, slider, trial card)
+- No console errors
+
+**Where this leaves the project:**
+Survey has 4 conditions (2x2: format order x N order), N-level-aware trial sequencing with
+boundary checks, and varied stimuli (3 low-disclosed + 6 high-disclosed trials). Deployed to
+gh-pages. Ready for Oussema's final review.
+
+**Next session should probably:**
+1. Oussema reviews the live survey at https://oussemaajal.github.io/FBO/
+2. Run full pilot (n=80 across 4 conditions, 20 per condition) or proceed to full study (n=240)
+3. Build analysis pipeline for within-subjects 18-trial design with N-order counterbalancing
