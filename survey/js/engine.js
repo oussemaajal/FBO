@@ -78,7 +78,8 @@
 
     var text = String(digit);
     var fontFamily = getComputedStyle(document.body).fontFamily || 'sans-serif';
-    ctx.font = 'bold 36px ' + fontFamily;
+    var fontSize = text.length > 1 ? 30 : 36;
+    ctx.font = 'bold ' + fontSize + 'px ' + fontFamily;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 

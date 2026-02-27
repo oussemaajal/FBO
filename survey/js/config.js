@@ -161,11 +161,11 @@ var SURVEY_CONFIG = {
       title: "An Example",
       body:
         "<p>Suppose a Sender receives <strong>4 numbers</strong> from the random " +
-        "generator: <strong>2, 5, 7, and 9</strong>. The true average is " +
-        "<strong>5.75</strong>.</p>" +
+        "generator: <strong>1, 4, 5, and 10</strong>. The true average is " +
+        "<strong>5.00</strong>.</p>" +
 
         "<p>The Sender wants you to guess high, so they decide to show you " +
-        "<strong>only the 9</strong> and hide the rest.</p>" +
+        "<strong>only the 10</strong> and hide the rest.</p>" +
 
         "<p>Here is what you would see on your screen:</p>" +
 
@@ -175,7 +175,7 @@ var SURVEY_CONFIG = {
             "<div class='trial-header'>The Sender's numbers:</div>" +
             "<div class='trial-slot'>" +
               "<span class='trial-number-label'>Number 1:</span>" +
-              "<canvas class='digit-canvas' data-d='9' width='60' height='72'></canvas>" +
+              "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
             "</div>" +
             "<div class='trial-slot'>" +
               "<span class='trial-number-label'>Number 2:</span>" +
@@ -195,16 +195,16 @@ var SURVEY_CONFIG = {
           "<div class='trial-card'>" +
             "<div class='trial-header'>The Sender chose to show you:</div>" +
             "<div class='trial-disclosed-values-row'>" +
-              "<canvas class='digit-canvas' data-d='9' width='60' height='72'></canvas>" +
+              "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
             "</div>" +
           "</div>" +
         "<!--endif:clean-->" +
 
         "<p>In this example, the Sender has 4 numbers total but chose to reveal " +
-        "only one of them. The number they showed you is a <strong>9</strong>. " +
+        "only one of them. The number they showed you is a <strong>10</strong>. " +
         "Your task is to guess what the average of <em>all 4 numbers</em> is.</p>" +
 
-        "<p>If you guessed <strong>5.75</strong>, you would be exactly right! " +
+        "<p>If you guessed <strong>5.00</strong>, you would be exactly right! " +
         "But of course, you would not know the hidden numbers, so you have to " +
         "use your judgement.</p>" +
 
@@ -233,23 +233,23 @@ var SURVEY_CONFIG = {
       description: "<p>Before we begin, let's make sure you understand the game.</p>",
       questions: [
         {
-          prompt: "A Sender has 4 numbers: 2, 5, 7, 9. They choose to show you only: <strong>9</strong>. " +
+          prompt: "A Sender has 4 numbers: 1, 4, 5, 10. They choose to show you only: <strong>10</strong>. " +
                   "What is the Sender's TRUE average of all 4 numbers?",
           type: "radio",
-          correct: "5.75",
+          correct: "5.00",
           options: [
-            { value: "9.00", label: "9.00" },
-            { value: "5.75", label: "5.75" },
-            { value: "7.00", label: "7.00" },
+            { value: "10.00", label: "10.00" },
+            { value: "5.00", label: "5.00" },
+            { value: "7.50", label: "7.50" },
             { value: "5.50", label: "5.50" }
           ],
-          remedialText: "The correct answer is 5.75. The Sender has four numbers: 2, 5, 7, and 9. " +
-                        "The average is (2 + 5 + 7 + 9) / 4 = 23 / 4 = 5.75. " +
-                        "Notice that the Sender showed you only the 9 (the highest number) " +
+          remedialText: "The correct answer is 5.00. The Sender has four numbers: 1, 4, 5, and 10. " +
+                        "The average is (1 + 4 + 5 + 10) / 4 = 20 / 4 = 5.00. " +
+                        "Notice that the Sender showed you only the 10 (the highest number) " +
                         "to make you think the average is higher than it really is."
         },
         {
-          prompt: "Why might the Sender have shown only the 9?",
+          prompt: "Why might the Sender have shown only the 10?",
           type: "radio",
           correct: "overestimate",
           options: [
@@ -269,7 +269,8 @@ var SURVEY_CONFIG = {
     // ──────────────────────────────────────────────────────────────────
     // TRIAL BLOCK -- 9 trials (3x3 grid: N in {4,6,8} x k in {1,2,3})
     // ──────────────────────────────────────────────────────────────────
-    // All disclosed means = 8.0 for clean cross-trial comparisons.
+    // Disclosed values vary across trials for naturalistic variation.
+    // Disclosed values are always the top-k values (strategic sender).
     // Test A (anchoring to disclosure volume): hold k/N ~ constant, vary both
     // Test B (adjustment to omission): hold k fixed, increase N
     {
@@ -278,17 +279,17 @@ var SURVEY_CONFIG = {
       randomize: true,   // Shuffle trial order (seeded by Prolific PID)
       trials: [
         // N=4
-        { id: "t1", N: 4, k: 1, disclosed: [8],       hidden: [4, 3, 1],             trueAverage: 4.00 },
-        { id: "t2", N: 4, k: 2, disclosed: [9, 7],    hidden: [3, 1],                trueAverage: 5.00 },
-        { id: "t3", N: 4, k: 3, disclosed: [9, 8, 7], hidden: [2],                   trueAverage: 6.50 },
+        { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
+        { id: "t2", N: 4, k: 2, disclosed: [9, 6],     hidden: [3, 2],                trueAverage: 5.00 },
+        { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
         // N=6
-        { id: "t4", N: 6, k: 1, disclosed: [8],       hidden: [5, 4, 3, 2, 1],       trueAverage: 3.83 },
-        { id: "t5", N: 6, k: 2, disclosed: [9, 7],    hidden: [5, 3, 2, 1],          trueAverage: 4.50 },
-        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 7], hidden: [4, 2, 1],             trueAverage: 5.17 },
+        { id: "t4", N: 6, k: 1, disclosed: [7],        hidden: [5, 4, 3, 2, 1],       trueAverage: 3.67 },
+        { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
+        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
         // N=8
-        { id: "t7", N: 8, k: 1, disclosed: [8],       hidden: [6, 5, 4, 3, 2, 2, 1], trueAverage: 3.88 },
-        { id: "t8", N: 8, k: 2, disclosed: [9, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.00 },
-        { id: "t9", N: 8, k: 3, disclosed: [9, 8, 7], hidden: [5, 3, 2, 2, 1],       trueAverage: 4.63 }
+        { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        { id: "t8", N: 8, k: 2, disclosed: [10, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.13 },
+        { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
       ]
     },
 
