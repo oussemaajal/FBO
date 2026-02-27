@@ -538,6 +538,28 @@ body {
   border-bottom: none;
 }
 
+/* ---------- N-Intro Display (trial splash page) ---------- */
+.n-intro-display {
+  text-align: center;
+  padding: 32px 24px;
+  margin: 24px 0;
+}
+
+.n-intro-label {
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.n-intro-number {
+  font-size: 96px;
+  font-weight: 800;
+  color: var(--color-primary-dark);
+  line-height: 1.2;
+  margin: 8px 0;
+}
+
 /* ---------- Digit Canvas (anti-AI) ---------- */
 .digit-canvas {
   display: inline-block;
@@ -870,6 +892,10 @@ body {
   .likert-option label {
     padding: 8px 2px;
     font-size: 13px;
+  }
+
+  .n-intro-number {
+    font-size: 72px;
   }
 
   .bonus-amount {
