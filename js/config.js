@@ -311,15 +311,15 @@ var SURVEY_CONFIG = {
       trials: [
         // N=4
         { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
-        { id: "t2", N: 4, k: 2, disclosed: [9, 6],     hidden: [3, 2],                trueAverage: 5.00 },
+        { id: "t2", N: 4, k: 2, disclosed: [6, 5],     hidden: [2, 1],                trueAverage: 3.50 },
         { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
         // N=6
-        { id: "t4", N: 6, k: 1, disclosed: [7],        hidden: [5, 4, 3, 2, 1],       trueAverage: 3.67 },
+        { id: "t4", N: 6, k: 1, disclosed: [5],        hidden: [4, 3, 2, 2, 1],       trueAverage: 2.83 },
         { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
         { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
         // N=8
         { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
-        { id: "t8", N: 8, k: 2, disclosed: [10, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.13 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 4],     hidden: [4, 3, 2, 2, 1, 1],    trueAverage: 2.75 },
         { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
       ]
     },
@@ -386,15 +386,15 @@ var SURVEY_CONFIG = {
         // Same 9 trials, re-randomized independently for Block 2
         // N=4
         { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
-        { id: "t2", N: 4, k: 2, disclosed: [9, 6],     hidden: [3, 2],                trueAverage: 5.00 },
+        { id: "t2", N: 4, k: 2, disclosed: [6, 5],     hidden: [2, 1],                trueAverage: 3.50 },
         { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
         // N=6
-        { id: "t4", N: 6, k: 1, disclosed: [7],        hidden: [5, 4, 3, 2, 1],       trueAverage: 3.67 },
+        { id: "t4", N: 6, k: 1, disclosed: [5],        hidden: [4, 3, 2, 2, 1],       trueAverage: 2.83 },
         { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
         { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
         // N=8
         { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
-        { id: "t8", N: 8, k: 2, disclosed: [10, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.13 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 4],     hidden: [4, 3, 2, 2, 1, 1],    trueAverage: 2.75 },
         { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
       ]
     },

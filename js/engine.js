@@ -259,12 +259,28 @@
           // Sort N levels
           var nLevels = Object.keys(byN).map(Number);
           nLevels.sort(function (a, b) { return nOrder === 'desc' ? b - a : a - b; });
-          // Shuffle within each N level, then concatenate
+          // Shuffle within each N level, then concatenate.
+          // Ensure that at N-level boundaries, the k value differs so
+          // participants don't see near-identical disclosed sets in a row
+          // (e.g. [8,7] for N=6 followed by [10,7] for N=8).
           var seed = hashString(self.prolificPID + '_trials_block' + block);
           trials = [];
           nLevels.forEach(function (n) {
             var group = seededShuffle(byN[n], seed);
-            seed = hashString(seed.toString() + '_' + n); // vary seed per N level
+            seed = hashString(seed.toString() + '_' + n);
+            // Fix boundary: if the last trial already in the list has the
+            // same k as the first trial of this group, swap to avoid it.
+            if (trials.length > 0 && group.length > 1) {
+              var lastK = trials[trials.length - 1].k;
+              if (group[0].k === lastK) {
+                for (var swi = 1; swi < group.length; swi++) {
+                  if (group[swi].k !== lastK) {
+                    var tmp = group[0]; group[0] = group[swi]; group[swi] = tmp;
+                    break;
+                  }
+                }
+              }
+            }
             trials = trials.concat(group);
           });
         }
