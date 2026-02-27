@@ -58,7 +58,12 @@ var SURVEY_CONFIG = {
   // 2x2 design: format order (clean_first vs explicit_first) x
   // N order (asc = 4,6,8 vs desc = 8,6,4).
   // Within each N level, trials are seeded-shuffled.
-  conditions: ["clean_first_asc", "clean_first_desc", "explicit_first_asc", "explicit_first_desc"],
+  conditions: ["clean_first", "explicit_first"],
+
+  // ── Trial Attention Checks ─────────────────────────────────────────
+  // Recall-based checks inserted after N randomly-selected trials.
+  // Questions: how many secret numbers, how many disclosed, highest disclosed.
+  trialAttentionCount: 3,
 
   // ── Bonus Parameters ─────────────────────────────────────────────────
   // After all trials, one trial is selected at random.
