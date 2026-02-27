@@ -43,6 +43,84 @@
     return div.innerHTML;
   }
 
+  // ── Utility: render digit on canvas (anti-AI) ──────────────────────────
+  // Draws a number on an HTML5 canvas with visual noise so that the digit
+  // is not present as text in the DOM. Humans read it easily; text-based
+  // AI tools reading the page source see only a <canvas> element.
+  function renderDigitOnCanvas(canvas, digit) {
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width;
+    var h = canvas.height;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background noise dots
+    var noiseCount = 25 + Math.floor(Math.random() * 15);
+    for (var i = 0; i < noiseCount; i++) {
+      ctx.fillStyle = 'rgba(' +
+        Math.floor(180 + Math.random() * 60) + ',' +
+        Math.floor(180 + Math.random() * 60) + ',' +
+        Math.floor(200 + Math.random() * 55) + ',' +
+        (0.25 + Math.random() * 0.25) + ')';
+      ctx.beginPath();
+      ctx.arc(Math.random() * w, Math.random() * h, 1 + Math.random() * 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Random slight rotation and jitter
+    var angle = (Math.random() - 0.5) * 10 * Math.PI / 180;
+    var jitterX = (Math.random() - 0.5) * 4;
+    var jitterY = (Math.random() - 0.5) * 4;
+
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    ctx.rotate(angle);
+
+    var text = String(digit);
+    var fontFamily = getComputedStyle(document.body).fontFamily || 'sans-serif';
+    ctx.font = 'bold 36px ' + fontFamily;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    // Shadow
+    ctx.fillStyle = 'rgba(58, 12, 163, 0.12)';
+    ctx.fillText(text, jitterX + 1.5, jitterY + 1.5);
+
+    // Main digit
+    ctx.fillStyle = '#3a0ca3';
+    ctx.fillText(text, jitterX, jitterY);
+
+    ctx.restore();
+
+    // Subtle noise lines
+    ctx.strokeStyle = 'rgba(200, 200, 210, 0.15)';
+    ctx.lineWidth = 0.5;
+    for (var j = 0; j < 3; j++) {
+      ctx.beginPath();
+      ctx.moveTo(Math.random() * w, Math.random() * h);
+      ctx.lineTo(Math.random() * w, Math.random() * h);
+      ctx.stroke();
+    }
+  }
+
+  // Draws all pending digit canvases after innerHTML is set.
+  // - pendingMap: object { canvasId: digitValue } for trial pages (no DOM leakage)
+  // - Also draws any <canvas class="digit-canvas" data-d="X"> for instruction examples
+  function drawDigitCanvases(pendingMap) {
+    if (pendingMap) {
+      var ids = Object.keys(pendingMap);
+      for (var i = 0; i < ids.length; i++) {
+        var el = document.getElementById(ids[i]);
+        if (el) renderDigitOnCanvas(el, pendingMap[ids[i]]);
+      }
+    }
+    // Instruction/example canvases (data-d attribute is acceptable here)
+    var attrCanvases = document.querySelectorAll('canvas.digit-canvas[data-d]');
+    for (var j = 0; j < attrCanvases.length; j++) {
+      renderDigitOnCanvas(attrCanvases[j], attrCanvases[j].getAttribute('data-d'));
+    }
+  }
+
   // ── SurveyEngine ───────────────────────────────────────────────────────
   function SurveyEngine(config) {
     this.config = config;
@@ -237,6 +315,20 @@
       // Attach click handlers
       self.attachOptionCardHandlers();
       self.attachConsentHandler();
+
+      // Attach slider event listener (trial pages)
+      var slider = document.getElementById('trial_guess');
+      var sliderDisplay = document.getElementById('slider_value');
+      if (slider && sliderDisplay && slider.type === 'range') {
+        slider.addEventListener('input', function () {
+          sliderDisplay.textContent = parseFloat(slider.value).toFixed(1);
+          slider.setAttribute('data-touched', 'true');
+        });
+      }
+
+      // Draw digit canvases (anti-AI: digits rendered on canvas, not as text)
+      drawDigitCanvases(self._pendingCanvases);
+      self._pendingCanvases = {};
 
       // Scroll to top
       window.scrollTo(0, 0);
@@ -441,8 +533,8 @@
     // Trial page: require the guess
     if (page.type === 'trial') {
       var guessInput = document.getElementById('trial_guess');
-      if (guessInput && guessInput.value === '') {
-        this.showError('trial_guess', 'Please enter your guess.');
+      if (guessInput && guessInput.getAttribute('data-touched') === 'false') {
+        this.showError('trial_guess', 'Please drag the slider to make your guess.');
         valid = false;
       } else if (guessInput) {
         var gv = parseFloat(guessInput.value);
@@ -827,6 +919,9 @@
     var condition = this.condition;
     var html = '';
 
+    // Initialize pending canvases registry for this render
+    this._pendingCanvases = this._pendingCanvases || {};
+
     html += '<div class="page-subtitle">Round ' + (page.trialIndex + 1) +
             ' of ' + page.totalTrials + '</div>';
 
@@ -843,7 +938,9 @@
         html += '<div class="trial-slot">';
         html += '<span class="trial-number-label">Number ' + (i + 1) + ':</span>';
         if (disclosedIdx < trial.disclosed.length) {
-          html += '<span class="trial-disclosed-value">' + trial.disclosed[disclosedIdx] + '</span>';
+          var canvasId = 'dc_' + disclosedIdx + '_' + trial.id;
+          this._pendingCanvases[canvasId] = trial.disclosed[disclosedIdx];
+          html += '<canvas id="' + canvasId + '" class="digit-canvas" width="60" height="72"></canvas>';
           disclosedIdx++;
         } else {
           html += '<span class="trial-hidden-value">[Not shown]</span>';
@@ -851,22 +948,34 @@
         html += '</div>';
       }
     } else {
-      // Clean condition: only show disclosed values
+      // Clean condition: show disclosed values as canvas-rendered digits
       html += '<div class="trial-header">The Sender chose to show you:</div>';
-      html += '<div class="trial-disclosed-value">' + trial.disclosed.join(', ') + '</div>';
+      html += '<div class="trial-disclosed-values-row">';
+      for (var di = 0; di < trial.disclosed.length; di++) {
+        var canvasId = 'dc_' + di + '_' + trial.id;
+        this._pendingCanvases[canvasId] = trial.disclosed[di];
+        html += '<canvas id="' + canvasId + '" class="digit-canvas" width="60" height="72"></canvas>';
+        if (di < trial.disclosed.length - 1) {
+          html += '<span class="digit-separator">,</span>';
+        }
+      }
+      html += '</div>';
     }
 
     html += '</div>'; // end trial-card
 
-    // Question
+    // Question -- slider input
     html += '<div class="question-block">';
     html += '<div class="question-prompt">What is your best guess of the Sender\'s average across all ' +
             trial.N + ' of their numbers?</div>';
-    html += '<div class="number-input-wrapper">';
-    html += '<input type="number" class="number-input" id="trial_guess" ' +
-            'min="1" max="10" step="0.1" placeholder="?">';
+    html += '<div class="slider-value-display" id="slider_value">5.5</div>';
+    html += '<div class="slider-wrapper">';
+    html += '<span class="slider-label">1</span>';
+    html += '<input type="range" class="slider-input" id="trial_guess" ' +
+            'min="1" max="10" step="0.1" value="5.5" data-touched="false">';
+    html += '<span class="slider-label">10</span>';
     html += '</div>';
-    html += '<div class="number-input-hint">Enter a number from 1.0 to 10.0</div>';
+    html += '<div class="slider-hint">Drag the slider to make your guess</div>';
     html += '<div class="field-error" id="error_trial_guess"></div>';
     html += '</div>';
 
