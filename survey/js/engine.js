@@ -211,14 +211,25 @@
 
   // ── Display Format for Block ────────────────────────────────────────────
   // Maps (condition, block number) to display format ('clean' or 'explicit').
+  // Condition names: clean_first_asc, clean_first_desc, explicit_first_asc, explicit_first_desc
   SurveyEngine.prototype.getDisplayFormat = function (block) {
-    if (this.condition === 'clean_first') {
+    var isCleanFirst = this.condition.indexOf('clean_first') === 0;
+    if (isCleanFirst) {
       return block === 1 ? 'clean' : 'explicit';
-    } else if (this.condition === 'explicit_first') {
-      return block === 1 ? 'explicit' : 'clean';
     }
-    // Fallback for legacy conditions
-    return this.condition;
+    return block === 1 ? 'explicit' : 'clean';
+  };
+
+  // ── N-Order for Condition ──────────────────────────────────────────────
+  // Returns 'asc' (4,6,8) or 'desc' (8,6,4) based on condition name.
+  SurveyEngine.prototype.getNOrder = function () {
+    return this.condition.indexOf('_desc') !== -1 ? 'desc' : 'asc';
+  };
+
+  // ── Condition Key for Template Matching ─────────────────────────────────
+  // Returns 'clean_first' or 'explicit_first' for <!--if:--> templates.
+  SurveyEngine.prototype.getFormatOrder = function () {
+    return this.condition.indexOf('clean_first') === 0 ? 'clean_first' : 'explicit_first';
   };
 
   // ── Build Page Sequence ────────────────────────────────────────────────
@@ -234,10 +245,28 @@
 
         // Expand trial block into individual trial pages
         var trials = (page.trials || []).slice();
-        if (page.randomize && self.prolificPID) {
-          // Block-specific seed so Block 1 and Block 2 have independent orders
+
+        // Order trials by N (ascending or descending) based on condition,
+        // with seeded shuffle within each N level for variety.
+        var nOrder = self.getNOrder(); // 'asc' or 'desc'
+        if (self.prolificPID) {
+          // Group trials by N
+          var byN = {};
+          trials.forEach(function (t) {
+            if (!byN[t.N]) byN[t.N] = [];
+            byN[t.N].push(t);
+          });
+          // Sort N levels
+          var nLevels = Object.keys(byN).map(Number);
+          nLevels.sort(function (a, b) { return nOrder === 'desc' ? b - a : a - b; });
+          // Shuffle within each N level, then concatenate
           var seed = hashString(self.prolificPID + '_trials_block' + block);
-          trials = seededShuffle(trials, seed);
+          trials = [];
+          nLevels.forEach(function (n) {
+            var group = seededShuffle(byN[n], seed);
+            seed = hashString(seed.toString() + '_' + n); // vary seed per N level
+            trials = trials.concat(group);
+          });
         }
 
         // Record block boundary (first page of this block)
@@ -694,6 +723,8 @@
 
       // Experiment
       condition: this.condition,
+      formatOrder: this.getFormatOrder(),
+      nOrder: this.getNOrder(),
       block1Format: this.getDisplayFormat(1),
       block2Format: this.getDisplayFormat(2),
 
@@ -913,11 +944,12 @@
     // Template substitution for condition
     body = body.replace(/\{condition\}/g, this.condition);
     // Remove blocks meant for other conditions:
-    //   <!--if:conditionName-->...<!--endif:conditionName--> is kept only if name matches
-    var self = this;
+    //   <!--if:conditionName-->...<!--endif:conditionName--> is kept only if name matches.
+    //   Templates use format-order keys (clean_first / explicit_first).
+    var formatOrder = this.getFormatOrder();
     body = body.replace(/<!--if:(\w+)-->([\s\S]*?)<!--endif:\1-->/g,
       function (match, cond, inner) {
-        return cond === self.condition ? inner : '';
+        return cond === formatOrder ? inner : '';
       }
     );
     html += '<div class="page-body">' + body + '</div>';
@@ -978,9 +1010,9 @@
             ' of ' + page.totalTrials + ' &mdash; Part ' + page.block + '</div>';
 
     html += '<div class="n-intro-display">';
-    html += '<div class="n-intro-label">In this round, the Sender received</div>';
-    html += '<div class="n-intro-number">' + trial.N + '</div>';
-    html += '<div class="n-intro-label">numbers</div>';
+    html += '<div class="n-intro-label">In this round, the Sender received ' +
+            '<span class="n-intro-number">' + trial.N + '</span>' +
+            ' secret numbers</div>';
     html += '</div>';
 
     return html;
@@ -991,11 +1023,11 @@
     var html = '';
     html += '<h1 class="page-title">' + (page.title || 'Next Part') + '</h1>';
     var body = page.body || '';
-    // Process condition templates (same as instructions)
-    var self = this;
+    // Process condition templates using format-order key
+    var formatOrder = this.getFormatOrder();
     body = body.replace(/<!--if:(\w+)-->([\s\S]*?)<!--endif:\1-->/g,
       function (match, cond, inner) {
-        return cond === self.condition ? inner : '';
+        return cond === formatOrder ? inner : '';
       }
     );
     html += '<div class="page-body">' + body + '</div>';

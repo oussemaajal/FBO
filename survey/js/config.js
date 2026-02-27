@@ -55,7 +55,10 @@ var SURVEY_CONFIG = {
   // Every participant sees BOTH clean and explicit formats (9 trials each,
   // 18 total). The "condition" determines which format comes first.
   // Assigned deterministically via hash of Prolific PID.
-  conditions: ["clean_first", "explicit_first"],
+  // 2x2 design: format order (clean_first vs explicit_first) x
+  // N order (asc = 4,6,8 vs desc = 8,6,4).
+  // Within each N level, trials are seeded-shuffled.
+  conditions: ["clean_first_asc", "clean_first_desc", "explicit_first_asc", "explicit_first_desc"],
 
   // ── Bonus Parameters ─────────────────────────────────────────────────
   // After all trials, one trial is selected at random.
