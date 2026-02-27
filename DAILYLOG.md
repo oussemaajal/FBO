@@ -275,3 +275,41 @@ lower -- disclosed values of [6,5], [5], and [5,4] instead of the original [9,6]
 [10,7]. The sender is still strategic (showing top-k), but now participants encounter trials
 where the highest available number is only 5 or 6. This breaks the "everything shown is high"
 pattern and forces genuine engagement with each trial's specific numbers.
+
+**Attention checks that don't nudge.**
+
+A persistent challenge in survey design is verifying that participants are paying attention without
+inadvertently changing what they pay attention to. Traditional attention checks ("select Strongly
+Agree for this question") are intrusive and train participants to look for traps. The checks we
+added are different: after 3 randomly-selected trials (one from each third of the experiment),
+participants answer recall questions about the round they just completed. How many secret numbers
+did the Sender have? How many did they show you? What was the highest number shown?
+
+These are facts that were displayed prominently on the trial page. A participant who was actually
+reading and engaging will know the answers immediately. A participant who was clicking through
+randomly will struggle. Crucially, none of the questions mention averages, hidden numbers, or
+the display format -- so answering them doesn't nudge participants toward any particular guessing
+strategy. The checks are pure recall of objective, on-screen information.
+
+The three checks are seeded-randomly placed (deterministic per participant) so we can't be accused
+of cherry-picking which trials get checked, and the results are recorded with per-question
+correctness flags for analysis.
+
+**Simplifying the design: two conditions, not four.**
+
+After implementing the 2x2 design (format order x N-order), we reconsidered. Oussema wanted the
+trial order to be genuinely random rather than following a fixed ascending or descending N pattern.
+A fixed progression (always seeing N=4 first, then N=6, then N=8) could create a narrative in
+participants' minds about the game getting harder or more complex, which isn't the experience we
+want. A random mix -- where you might see N=8, then N=4, then N=6 -- keeps each trial feeling
+fresh and independent.
+
+This naturally eliminated the N-order dimension from the design, bringing us back to 2 conditions
+(clean_first vs explicit_first) with 120 participants each. The trial ordering uses a constrained
+random shuffle: a seeded PRNG generates a random permutation, then a greedy algorithm ensures no
+two consecutive trials share the same k value (number disclosed). If the greedy fix fails, it
+retries with a different seed, up to 10 attempts. In practice it always succeeds on the first or
+second try -- the constraint is mild with 9 trials and only 3 possible k values.
+
+The survey is now 52 pages (49 base + 3 attention checks), takes about 12-15 minutes, and is
+deployed to GitHub Pages. Ready for Oussema's final review before launching the pilot.

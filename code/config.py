@@ -107,17 +107,16 @@ EXPERIMENT_PARAMS = {
     # Randomization
     'seed': 42,
 
-    # Conditions (2x2: format order x N order)
+    # Conditions (between-subjects: format order)
     # Every participant sees both clean and explicit formats.
     # Format order: which display format comes first (clean_first vs explicit_first).
-    # N order: ascending (4,6,8) or descending (8,6,4) trial set sizes.
-    'conditions': ['clean_first_asc', 'clean_first_desc',
-                   'explicit_first_asc', 'explicit_first_desc'],
+    # Trial order within each block is randomized (seeded by PID).
+    'conditions': ['clean_first', 'explicit_first'],
 
     # Full experiment
-    'n_per_condition': 60,  # 60 per condition x 4 conditions = 240 total
+    'n_per_condition': 120,  # 120 per condition x 2 conditions = 240 total
 
-    # Pilot (stripped-down 2x2)
+    # Pilot
     'pilot': {
         'n_per_condition': 40,  # 40 per condition = 80 total
     },

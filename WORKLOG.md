@@ -510,7 +510,66 @@ Survey has 4 conditions (2x2: format order x N order), N-level-aware trial seque
 boundary checks, and varied stimuli (3 low-disclosed + 6 high-disclosed trials). Deployed to
 gh-pages. Ready for Oussema's final review.
 
+5. **Trial attention checks (engine.js + config.js):**
+   - Added recall-based attention checks after 3 randomly-selected trials (spread across thirds
+     of the experiment). Each check asks three multiple-choice questions about the trial just
+     completed:
+     - "How many secret numbers did the Sender have?" (options: 2, 4, 6, 8)
+     - "How many numbers did the Sender show you?" (options: 1, 2, 3, 4)
+     - "What was the highest number the Sender showed you?" (4 options: correct +/- 2, clamped 1-10)
+   - Design rationale: these check recall of objective facts shown on the trial page, without
+     nudging participants toward any particular guessing strategy. No mention of averages,
+     hidden numbers, or the format. Just "were you paying attention?"
+   - Implementation:
+     - Constructor: `this.trialAttentionResults = []`
+     - New `insertTrialAttentionChecks()`: selects 3 trial indices (one from each third of the
+       full 18-trial sequence), inserts `trial_attention` pages after them, recomputes block
+       boundary indices since splice shifts positions.
+     - New `renderTrialAttention(page)`: renders the 3 MC questions with radio buttons.
+     - `collectPageData`: stores results with correctness flags per question.
+     - `getAllData`: includes `trialAttentionResults` array and `trialAttentionAllCorrect` count.
+     - `saveProgress` / resume: persists and restores `trialAttentionResults`.
+     - Back button disabled on `trial_attention` pages (no peeking at the trial again).
+   - config.js: `trialAttentionCount: 3` added to config.
+
+6. **Simplified to 2 conditions with fully random trial order (engine.js + config.js + config.py):**
+   - Oussema requested mixed/random trial ordering within each block instead of the N-level
+     grouping (ascending or descending by set size).
+   - Dropped the 4-condition 2x2 design: removed `_asc`/`_desc` suffixes, back to 2 conditions:
+     `["clean_first", "explicit_first"]`.
+   - Rewrote trial ordering in `buildPageSequence()`: fully random seeded shuffle with
+     no-same-k-adjacency constraint. Uses retry mechanism (up to 10 different seeds) with
+     greedy swap fixing to guarantee no two consecutive trials share the same k value.
+   - Removed `getNOrder()` helper, simplified `getDisplayFormat()` and `getFormatOrder()`.
+   - Removed `nOrder` from `getAllData()` payload.
+   - config.py: 2 conditions, 120 per condition = 240 total.
+
+**Verified:**
+- PID "alice" (clean_first): 52 pages, Block 1 = clean, Block 2 = explicit, 0 k-adjacency
+  violations in both blocks, fully randomized N order, 3 attention checks spread across experiment.
+- PID "bob" (explicit_first): 52 pages, Block 1 = explicit, Block 2 = clean, 0 k-adjacency
+  violations in both blocks, randomized N order, 3 attention checks.
+
+**Updated stimulus grid (3 low-disclosed trials):**
+
+| ID | N | k | Disclosed    | Hidden            | True Avg |
+|----|---|---|-------------|-------------------|----------|
+| t1 | 4 | 1 | [8]         | [4, 3, 1]         | 4.00     |
+| t2 | 4 | 2 | [6, 5]      | [2, 1]            | 3.50     |
+| t3 | 4 | 3 | [10, 7, 6]  | [1]               | 6.00     |
+| t4 | 6 | 1 | [5]         | [4, 3, 2, 2, 1]   | 2.83     |
+| t5 | 6 | 2 | [8, 7]      | [5, 3, 2, 1]      | 4.33     |
+| t6 | 6 | 3 | [9, 8, 5]   | [3, 2, 1]         | 4.67     |
+| t7 | 8 | 1 | [9]         | [6,5,4,3,2,1,1]   | 3.88     |
+| t8 | 8 | 2 | [5, 4]      | [4,3,2,2,1,1]     | 2.75     |
+| t9 | 8 | 3 | [8, 7, 6]   | [5,3,2,2,1]       | 4.25     |
+
+**Where this leaves the project:**
+Survey has 2 conditions (format order only), fully random trial ordering with no-k-adjacency
+constraint, 3 trial attention checks, varied stimuli (3 low-disclosed + 6 high-disclosed), and
+52 total pages. Deployed to gh-pages.
+
 **Next session should probably:**
 1. Oussema reviews the live survey at https://oussemaajal.github.io/FBO/
-2. Run full pilot (n=80 across 4 conditions, 20 per condition) or proceed to full study (n=240)
-3. Build analysis pipeline for within-subjects 18-trial design with N-order counterbalancing
+2. Run full pilot (n=80, 40 per condition) or proceed to full study (n=240)
+3. Build analysis pipeline for within-subjects 18-trial design

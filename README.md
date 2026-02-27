@@ -19,20 +19,20 @@ Every participant sees both formats across two blocks of 9 trials each (18 trial
 | `clean` | Participants see only the disclosed numbers (no indication of how many were withheld) |
 | `explicit` | All N slots shown -- disclosed numbers plus "[Not shown]" markers for hidden ones |
 
-### Conditions (2x2: format order x N order)
+### Conditions (between-subjects: format order)
 
-| Condition | Block 1 Format | Block 2 Format | N Progression |
-|-----------|---------------|----------------|---------------|
-| `clean_first_asc` | Clean | Explicit | 4, 6, 8 |
-| `clean_first_desc` | Clean | Explicit | 8, 6, 4 |
-| `explicit_first_asc` | Explicit | Clean | 4, 6, 8 |
-| `explicit_first_desc` | Explicit | Clean | 8, 6, 4 |
+| Condition | Block 1 Format | Block 2 Format |
+|-----------|---------------|----------------|
+| `clean_first` | Clean | Explicit |
+| `explicit_first` | Explicit | Clean |
+
+Trial order within each block is fully randomized (seeded by PID), with a constraint that no two consecutive trials share the same k value.
 
 ### Sample Sizes
 
 | Component | Pilot | Full |
 |-----------|-------|------|
-| Per condition | 20 | 60 |
+| Per condition | 40 | 120 |
 | **Total participants** | **80** | **240** |
 
 ### Task
@@ -52,22 +52,24 @@ Accuracy-based bonus: up to $1.00 per participant.
 - 9 trials per block x 2 blocks = 18 trials per participant
 - N-intro splash page before each trial (inline, orange N for distinction)
 - Disclosed values vary across trials (always top-k; 3 trials have low draws with disclosed <= 6)
-- Trials ordered by N level (asc or desc per condition), shuffled within each N level
-- K-boundary prevention: consecutive N-level transitions never share k value
+- Trial order fully randomized per participant (seeded by PID)
+- No-k-adjacency constraint: consecutive trials never share k value
+- 3 trial attention checks (recall questions after randomly-selected trials)
 
 ## Current Status
 
-**Phase:** Survey deployed with 2x2 design, ready for final review
+**Phase:** Survey deployed with 2-condition design, ready for final review
 
 **What's built:**
 - Custom web survey engine (config-driven, generic, reusable)
 - Within-subjects design: 18 trials (9 per format), counterbalanced order
-- 2x2 condition design: format order (clean_first vs explicit_first) x N order (asc vs desc)
+- 2 conditions: clean_first vs explicit_first (format order)
+- Fully random trial ordering with no-k-adjacency constraint
 - Format-specific instruction pages (each format explained just before its block)
 - 5-page instruction flow: intro, mechanics+visual, incentives, format, bonus
 - Sender number card visual (CSS playing card aesthetic)
 - N-intro splash pages before each trial (inline, orange N for visual distinction)
-- N-ordered trial presentation with k-boundary clash prevention
+- 3 trial attention checks (recall questions after randomly-selected trials)
 - Varied stimuli: 3 low-disclosed trials (disclosed <= 6) mixed with 6 high-disclosed
 - Professional UI with responsive design, slider input for guesses
 - Canvas-rendered digits (anti-AI: no text in DOM)
@@ -83,8 +85,8 @@ Accuracy-based bonus: up to $1.00 per participant.
 
 **What's next:**
 1. Oussema reviews survey at https://oussemaajal.github.io/FBO/
-2. Run full pilot (n=80 across 4 conditions) or proceed to full study (n=240)
-3. Build analysis pipeline for within-subjects 18-trial design with N-order counterbalancing
+2. Run full pilot (n=80, 40 per condition) or proceed to full study (n=240)
+3. Build analysis pipeline for within-subjects 18-trial design
 
 ## Directory Structure
 

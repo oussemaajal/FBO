@@ -137,6 +137,7 @@
     this.comprehensionAttempts = 0;
     this.comprehensionFailed = false;
     this.attentionResults = [];
+    this.trialAttentionResults = [];  // recall checks after selected trials
     this.bonusInfo = null;
     this.minTimeTimer = null;
     this.minTimeReady = true;
@@ -183,6 +184,7 @@
           this.condition = saved.condition || this.condition;
           this.comprehensionAttempts = saved.comprehensionAttempts || 0;
           this.attentionResults = saved.attentionResults || [];
+          this.trialAttentionResults = saved.trialAttentionResults || [];
           this.currentPageIndex = saved.currentPageIndex;
         }
       }
@@ -211,25 +213,17 @@
 
   // ── Display Format for Block ────────────────────────────────────────────
   // Maps (condition, block number) to display format ('clean' or 'explicit').
-  // Condition names: clean_first_asc, clean_first_desc, explicit_first_asc, explicit_first_desc
   SurveyEngine.prototype.getDisplayFormat = function (block) {
-    var isCleanFirst = this.condition.indexOf('clean_first') === 0;
-    if (isCleanFirst) {
+    if (this.condition === 'clean_first') {
       return block === 1 ? 'clean' : 'explicit';
     }
     return block === 1 ? 'explicit' : 'clean';
   };
 
-  // ── N-Order for Condition ──────────────────────────────────────────────
-  // Returns 'asc' (4,6,8) or 'desc' (8,6,4) based on condition name.
-  SurveyEngine.prototype.getNOrder = function () {
-    return this.condition.indexOf('_desc') !== -1 ? 'desc' : 'asc';
-  };
-
   // ── Condition Key for Template Matching ─────────────────────────────────
   // Returns 'clean_first' or 'explicit_first' for <!--if:--> templates.
   SurveyEngine.prototype.getFormatOrder = function () {
-    return this.condition.indexOf('clean_first') === 0 ? 'clean_first' : 'explicit_first';
+    return this.condition;
   };
 
   // ── Build Page Sequence ────────────────────────────────────────────────
@@ -246,43 +240,33 @@
         // Expand trial block into individual trial pages
         var trials = (page.trials || []).slice();
 
-        // Order trials by N (ascending or descending) based on condition,
-        // with seeded shuffle within each N level for variety.
-        var nOrder = self.getNOrder(); // 'asc' or 'desc'
+        // Seeded random shuffle with no-same-k-adjacency constraint.
+        // Prevents consecutive trials from having the same k value,
+        // which would show similar disclosed sets back to back.
         if (self.prolificPID) {
-          // Group trials by N
-          var byN = {};
-          trials.forEach(function (t) {
-            if (!byN[t.N]) byN[t.N] = [];
-            byN[t.N].push(t);
-          });
-          // Sort N levels
-          var nLevels = Object.keys(byN).map(Number);
-          nLevels.sort(function (a, b) { return nOrder === 'desc' ? b - a : a - b; });
-          // Shuffle within each N level, then concatenate.
-          // Ensure that at N-level boundaries, the k value differs so
-          // participants don't see near-identical disclosed sets in a row
-          // (e.g. [8,7] for N=6 followed by [10,7] for N=8).
-          var seed = hashString(self.prolificPID + '_trials_block' + block);
-          trials = [];
-          nLevels.forEach(function (n) {
-            var group = seededShuffle(byN[n], seed);
-            seed = hashString(seed.toString() + '_' + n);
-            // Fix boundary: if the last trial already in the list has the
-            // same k as the first trial of this group, swap to avoid it.
-            if (trials.length > 0 && group.length > 1) {
-              var lastK = trials[trials.length - 1].k;
-              if (group[0].k === lastK) {
-                for (var swi = 1; swi < group.length; swi++) {
-                  if (group[swi].k !== lastK) {
-                    var tmp = group[0]; group[0] = group[swi]; group[swi] = tmp;
+          var baseSeed = hashString(self.prolificPID + '_trials_block' + block);
+          var src = (page.trials || []).slice();
+          for (var attempt = 0; attempt < 10; attempt++) {
+            var trySeed = hashString(baseSeed.toString() + '_' + attempt);
+            trials = seededShuffle(src, trySeed);
+            // Greedy fix: swap clashing trial with next non-clashing one
+            for (var fi = 1; fi < trials.length; fi++) {
+              if (trials[fi].k === trials[fi - 1].k) {
+                for (var fj = fi + 1; fj < trials.length; fj++) {
+                  if (trials[fj].k !== trials[fi - 1].k) {
+                    var tmp = trials[fi]; trials[fi] = trials[fj]; trials[fj] = tmp;
                     break;
                   }
                 }
               }
             }
-            trials = trials.concat(group);
-          });
+            // Check if all violations resolved
+            var ok = true;
+            for (var ci = 1; ci < trials.length; ci++) {
+              if (trials[ci].k === trials[ci - 1].k) { ok = false; break; }
+            }
+            if (ok) break;
+          }
         }
 
         // Record block boundary (first page of this block)
@@ -319,6 +303,63 @@
         self.pages.push(page);
       }
     });
+
+    // Insert trial attention checks after 3 selected trials
+    this.insertTrialAttentionChecks();
+  };
+
+  // ── Trial Attention Check Insertion ──────────────────────────────────
+  // Inserts recall-based attention checks after 3 seeded trial pages,
+  // spread across thirds of the experiment.
+  SurveyEngine.prototype.insertTrialAttentionChecks = function () {
+    var numChecks = this.config.trialAttentionCount || 0;
+    if (numChecks <= 0 || !this.prolificPID) return;
+
+    // Find all trial page indices
+    var trialIndices = [];
+    for (var i = 0; i < this.pages.length; i++) {
+      if (this.pages[i].type === 'trial') trialIndices.push(i);
+    }
+    if (trialIndices.length === 0) return;
+
+    // Select one trial from each third (seeded by PID)
+    var thirdSize = Math.floor(trialIndices.length / numChecks);
+    var seed = hashString(this.prolificPID + '_attn_select');
+    var rng = mulberry32(seed);
+    var selected = [];
+    for (var c = 0; c < numChecks; c++) {
+      var start = c * thirdSize;
+      var end = (c === numChecks - 1) ? trialIndices.length : (c + 1) * thirdSize;
+      var pick = start + Math.floor(rng() * (end - start));
+      selected.push(trialIndices[pick]);
+    }
+
+    // Insert in reverse order so splicing doesn't shift earlier indices
+    selected.sort(function (a, b) { return b - a; });
+    for (var s = 0; s < selected.length; s++) {
+      var idx = selected[s];
+      var trialPage = this.pages[idx];
+      this.pages.splice(idx + 1, 0, {
+        type: 'trial_attention',
+        id: 'trial_attn_' + trialPage.trial.id + '_b' + trialPage.block,
+        trial: trialPage.trial,
+        block: trialPage.block,
+        displayFormat: trialPage.displayFormat
+      });
+    }
+
+    // Recompute block boundary indices (insertions shifted positions)
+    this.blockBoundaryIndices = [];
+    var seenBlocks = {};
+    for (var bi = 0; bi < this.pages.length; bi++) {
+      var p = this.pages[bi];
+      if (p.type === 'transition') {
+        this.blockBoundaryIndices.push(bi);
+      } else if (p.type === 'trial_intro' && !seenBlocks[p.block]) {
+        seenBlocks[p.block] = true;
+        this.blockBoundaryIndices.push(bi);
+      }
+    }
   };
 
   // ── Progress ───────────────────────────────────────────────────────────
@@ -358,6 +399,7 @@
         case 'trial':          html = self.renderTrial(page); break;
         case 'transition':     html = self.renderTransition(page); break;
         case 'attention_check': html = self.renderAttentionCheck(page); break;
+        case 'trial_attention': html = self.renderTrialAttention(page); break;
         case 'questionnaire':  html = self.renderQuestionnaire(page); break;
         case 'debrief':        html = self.renderDebrief(page); break;
         default:               html = '<p>Unknown page type: ' + esc(page.type) + '</p>';
@@ -377,7 +419,7 @@
       var atBoundary = self.blockBoundaryIndices.indexOf(index) !== -1;
       var noBack = index === 0 || page.type === 'welcome' || page.type === 'debrief'
                    || page.type === 'comprehension' || page.type === 'transition'
-                   || atBoundary;
+                   || page.type === 'trial_attention' || atBoundary;
       self.elBtnBack.style.display = noBack ? 'none' : '';
 
       // Next button text
@@ -715,6 +757,23 @@
       }
     }
 
+    // Store trial attention check results
+    if (page.type === 'trial_attention' && page.trial) {
+      var t = page.trial;
+      var nAns = data['attn_n'] ? parseInt(data['attn_n']) : null;
+      var kAns = data['attn_k'] ? parseInt(data['attn_k']) : null;
+      var maxAns = data['attn_max'] ? parseInt(data['attn_max']) : null;
+      var correctMax = Math.max.apply(null, t.disclosed);
+      this.trialAttentionResults.push({
+        trialId: t.id,
+        block: page.block,
+        nAnswer: nAns, nCorrect: nAns === t.N,
+        kAnswer: kAns, kCorrect: kAns === t.k,
+        maxAnswer: maxAns, maxCorrect: maxAns === correctMax,
+        allCorrect: nAns === t.N && kAns === t.k && maxAns === correctMax
+      });
+    }
+
     this.responses[page.id] = data;
   };
 
@@ -740,7 +799,6 @@
       // Experiment
       condition: this.condition,
       formatOrder: this.getFormatOrder(),
-      nOrder: this.getNOrder(),
       block1Format: this.getDisplayFormat(1),
       block2Format: this.getDisplayFormat(2),
 
@@ -757,10 +815,14 @@
       comprehensionAttempts: this.comprehensionAttempts,
       comprehensionFailed: this.comprehensionFailed,
 
-      // Attention checks
+      // Attention checks (end-of-survey)
       attentionResults: this.attentionResults,
       attentionPassed: this.attentionResults.filter(function (r) { return r.passed; }).length,
       attentionFailed: this.attentionResults.filter(function (r) { return !r.passed; }).length,
+
+      // Trial attention checks (recall after selected rounds)
+      trialAttentionResults: this.trialAttentionResults,
+      trialAttentionAllCorrect: this.trialAttentionResults.filter(function (r) { return r.allCorrect; }).length,
 
       // Bonus
       bonus: this.bonusInfo,
@@ -781,7 +843,8 @@
       timing: this.timing,
       trialGuesses: this.trialGuesses,
       comprehensionAttempts: this.comprehensionAttempts,
-      attentionResults: this.attentionResults
+      attentionResults: this.attentionResults,
+      trialAttentionResults: this.trialAttentionResults
     });
   };
 
@@ -1138,6 +1201,74 @@
 
     html += '<div class="field-error" id="error_' + name + '"></div>';
     html += '</div>';
+    return html;
+  };
+
+  // Trial Attention Check (recall questions after selected trials)
+  SurveyEngine.prototype.renderTrialAttention = function (page) {
+    var trial = page.trial;
+    var html = '';
+
+    html += '<h1 class="page-title">Attention Check</h1>';
+    html += '<p>Please answer these questions about the round you just completed.</p>';
+
+    // Q1: How many secret numbers did the Sender have?
+    html += '<div class="question-block" data-required="true" data-field-name="attn_n" data-field-type="radio">';
+    html += '<div class="question-prompt">How many secret numbers did the Sender have?</div>';
+    html += '<div class="option-list">';
+    [2, 4, 6, 8].forEach(function (n) {
+      html += '<div class="option-card">';
+      html += '<input type="radio" name="attn_n" value="' + n + '">';
+      html += '<span class="option-label">' + n + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="field-error" id="error_attn_n"></div>';
+    html += '</div>';
+
+    // Q2: How many numbers did the Sender show you?
+    html += '<div class="question-block" data-required="true" data-field-name="attn_k" data-field-type="radio">';
+    html += '<div class="question-prompt">How many numbers did the Sender show you?</div>';
+    html += '<div class="option-list">';
+    [1, 2, 3, 4].forEach(function (k) {
+      html += '<div class="option-card">';
+      html += '<input type="radio" name="attn_k" value="' + k + '">';
+      html += '<span class="option-label">' + k + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="field-error" id="error_attn_k"></div>';
+    html += '</div>';
+
+    // Q3: What was the highest number the Sender showed you?
+    var maxVal = Math.max.apply(null, trial.disclosed);
+    var maxOptions = [];
+    for (var v = maxVal - 2; v <= maxVal + 1; v++) {
+      if (v >= 1 && v <= 10) maxOptions.push(v);
+    }
+    // Pad to 4 options if needed
+    while (maxOptions.length < 4) {
+      var lo = maxOptions[0] - 1;
+      var hi = maxOptions[maxOptions.length - 1] + 1;
+      if (lo >= 1) maxOptions.unshift(lo);
+      else if (hi <= 10) maxOptions.push(hi);
+      else break;
+    }
+    maxOptions = maxOptions.slice(0, 4);
+
+    html += '<div class="question-block" data-required="true" data-field-name="attn_max" data-field-type="radio">';
+    html += '<div class="question-prompt">What was the highest number the Sender showed you?</div>';
+    html += '<div class="option-list">';
+    maxOptions.forEach(function (mv) {
+      html += '<div class="option-card">';
+      html += '<input type="radio" name="attn_max" value="' + mv + '">';
+      html += '<span class="option-label">' + mv + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="field-error" id="error_attn_max"></div>';
+    html += '</div>';
+
     return html;
   };
 
