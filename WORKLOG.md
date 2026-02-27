@@ -349,3 +349,92 @@ https://oussemaajal.github.io/FBO/
 2. Run full pilot (n=80) or move to full study (n=240)
 3. Build analysis pipeline for within-subjects 18-trial design
 4. Consider whether the N-intro page text/styling needs adjustment
+
+---
+
+## 2026-02-27 | Session 5: Instruction redesign -- format-specific explanations
+
+**Goal:** Redesign instruction flow per Oussema's feedback: don't show both formats
+upfront, explain each format only right before the block that uses it.
+
+**Context from Oussema:**
+- "the explanation of the two different formats shouldn't be done like that, each
+  format should be explained when that format is about to be shown in the game"
+- "break up the 'The Guessing Game' slide into three separate ones"
+- "include a picture in the one that explains what the sender gets"
+- "don't use extreme numbers, use the example where there are 2 secret numbers:
+  4 and 6, and the sender chooses to show only the 6"
+
+**What happened:**
+
+1. **survey.css changes:**
+   - New `.sender-visual`, `.sender-number-cards`, `.sender-number-card` styles:
+     playing card aesthetic (72x88px white cards, blue border, rounded corners, subtle
+     shadow). `.card-hidden` variant for hidden number cards (grey border, muted text).
+   - Responsive: cards shrink to 60x74px on mobile.
+
+2. **config.js changes -- Instruction pages split into 5:**
+   - `instructions_1a` ("The Guessing Game"): Just the intro -- who the Sender is,
+     that Senders are real human participants from an earlier session. minTime: 15s.
+   - `instructions_1b` ("How the Game Works"): 3 steps + sender number card visual
+     showing two cards with "4" and "6". The visual uses CSS-styled divs (not canvas).
+     minTime: 20s.
+   - `instructions_1c` ("The Sender's Goal"): Incentives -- Sender gets paid based on
+     your guess, has incentive to make you overestimate. minTime: 15s.
+   - `instructions_format` ("What You Will See"): Condition-specific format explanation.
+     Uses `<!--if:clean_first-->` / `<!--if:explicit_first-->` templates. Shows the N=2
+     example (Sender gets [4,6], shows only [6]) in whichever format comes first.
+     Clean shows just the canvas "6"; explicit shows 2 slots with "6" and "[Not shown]".
+     minTime: 20s.
+   - `instructions_bonus` ("Your Bonus"): Bonus explanation + key takeaway box. minTime: 10s.
+
+3. **config.js changes -- Comprehension check updated:**
+   - Old: "A Sender has 4 numbers: 1, 4, 5, 10. They show you only: 10."
+   - New: "A Sender has 2 numbers: 4 and 6. They show you only: 6."
+   - Answer options: [6.00, 5.00, 4.00, 5.50], correct: 5.00
+   - Remedial text updated to reference N=2 example.
+   - Q2: "Why might the Sender have shown only the 6?" (was "the 10")
+
+4. **config.js changes -- Transition page redesigned:**
+   - Now shows the OTHER format with the same N=2 visual example.
+   - For clean_first: transition shows explicit format (2 slots with 6 + [Not shown])
+   - For explicit_first: transition shows clean format (just the canvas 6)
+   - Includes canvas digit rendering via data-d attributes. minTime: 15s (was 10s).
+
+5. **No engine.js changes needed**: The existing renderInstructions() and
+   renderTransition() already support condition templates and canvas data-d attributes.
+
+6. **Verified locally with both conditions:**
+   - PID "alice" (clean_first): Format page shows clean format, transition shows explicit
+   - PID "bob" (explicit_first): Format page shows explicit format, transition shows clean
+   - 49 total pages (was 46; net +3 from splitting 2 instruction pages into 5)
+   - Comprehension check uses N=2, [4,6], correct answer 5.00
+   - Sender number card visual renders on instructions_1b
+   - Canvas digits render correctly on format and transition pages
+   - No console errors
+
+7. **Deployed to gh-pages**: Committed on main, copied to gh-pages, pushed both.
+
+**New instruction flow (49 pages):**
+```
+welcome -> consent
+-> instructions_1a: "The Guessing Game" (intro: who the Sender is)
+-> instructions_1b: "How the Game Works" (3 steps + sender card visual)
+-> instructions_1c: "The Sender's Goal" (incentives)
+-> instructions_format: Format explanation + example (condition-specific)
+-> instructions_bonus: Bonus + key takeaway
+-> comprehension (N=2, [4,6], showing [6])
+-> [9x (trial_intro + trial)] Block 1  (18 pages)
+-> transition: explain OTHER format with same N=2 example
+-> [9x (trial_intro + trial)] Block 2  (18 pages)
+-> attention_check -> posttask -> demographics -> debrief
+```
+
+**Where this leaves the project:**
+Instruction redesign complete and deployed to gh-pages. Each format is now explained
+only right before its block. Simpler N=2 example used consistently throughout.
+
+**Next session should probably:**
+1. Oussema reviews the live survey at https://oussemaajal.github.io/FBO/
+2. Run full pilot (n=80) or proceed to full study (n=240)
+3. Build analysis pipeline for within-subjects 18-trial design

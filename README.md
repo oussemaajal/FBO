@@ -54,16 +54,19 @@ Accuracy-based bonus: up to $1.00 per participant.
 
 ## Current Status
 
-**Phase:** Within-subjects survey deployed, ready for review
+**Phase:** Survey deployed with instruction redesign, ready for review
 
 **What's built:**
 - Custom web survey engine (config-driven, generic, reusable)
 - Within-subjects design: 18 trials (9 per format), counterbalanced order
+- Format-specific instruction pages (each format explained just before its block)
+- 5-page instruction flow: intro, mechanics+visual, incentives, format, bonus
+- Sender number card visual (CSS playing card aesthetic)
 - N-intro splash pages before each trial (prominent N display)
 - Professional UI with responsive design, slider input for guesses
 - Canvas-rendered digits (anti-AI: no text in DOM)
 - Bot/AI detection (honeypot, invisible instruction, behavioral tracking)
-- Comprehension checks with remedial flow
+- Comprehension checks with remedial flow (N=2 example)
 - Min-time enforcement on instruction pages
 - Seeded trial randomization (deterministic per participant)
 - Accuracy-based bonus calculation and display
@@ -73,7 +76,7 @@ Accuracy-based bonus: up to $1.00 per participant.
 - Deployed to GitHub Pages: https://oussemaajal.github.io/FBO/
 
 **What's next:**
-1. Oussema reviews within-subjects survey at https://oussemaajal.github.io/FBO/
+1. Oussema reviews survey at https://oussemaajal.github.io/FBO/
 2. Run full pilot (n=80) or proceed to full study (n=240)
 3. Build analysis pipeline for within-subjects 18-trial design
 

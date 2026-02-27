@@ -187,3 +187,48 @@ The estimated duration went from 8-10 to 12-15 minutes.
 
 Both conditions were tested locally and the survey was deployed to GitHub Pages. Ready for
 Oussema to walk through and confirm the experience feels right before we run a pilot.
+
+---
+
+## 2026-02-27
+
+**Instruction redesign: format-specific explanations that arrive just in time.**
+
+Oussema walked through the within-subjects survey and had a crucial observation: showing
+both display formats in the instructions at the very beginning was wrong. If a participant
+is about to play Block 1 in the clean format, they should only learn what clean looks like.
+The explicit format should be explained later, right before Block 2, when they actually need
+it. Showing both upfront creates unnecessary cognitive load and might prime participants to
+think about the format difference rather than just responding naturally.
+
+This is a subtle but important point about experimental design. In a within-subjects study,
+the transition between conditions is itself a moment worth controlling carefully. If both
+formats are explained at the start, participants might approach Block 2 differently because
+they've been mentally rehearsing the alternative format for the entire first half. By
+explaining each format just in time, we keep the participant focused on what's in front of
+them.
+
+The instruction flow was restructured from 2 long pages into 5 shorter, focused ones.
+"The Guessing Game" was split into three natural sections: who the Sender is (intro), how
+the game works (the three steps plus a visual), and the Sender's incentives. The visual is
+a pair of CSS-styled "playing cards" showing the numbers 4 and 6 -- a concrete image of what
+it looks like for a Sender to receive their secret numbers. Then a format-specific page
+explains exactly what the participant will see, using the same simple example: Sender gets
+[4, 6], shows only the 6. Finally, a bonus page explains the incentive structure.
+
+The example was also simplified. The old example used N=4 with numbers [1, 4, 5, 10] where
+the Sender shows [10] -- effective but perhaps too extreme, with the disclosed number being
+the maximum possible value. The new example uses N=2 with [4, 6], Sender shows [6]. This is
+gentler and more representative of what participants will actually encounter in trials. The
+arithmetic is trivial: (4+6)/2 = 5.00. And a single disclosed number "6" is less dramatic
+than "10", which might have anchored participants differently during comprehension.
+
+The transition page between blocks was also redesigned. Instead of just describing the format
+change in words, it now shows the OTHER format with the same N=2 visual example. If you
+started with clean (just seeing the 6), the transition shows you the explicit format (two
+slots: 6 and [Not shown]). This ensures participants understand the new format before
+encountering it in Block 2, without having to figure it out from the first trial.
+
+The survey now has 49 pages (up from 46). No engine.js changes were needed -- the existing
+condition template system and canvas rendering handled everything. Deployed to GitHub Pages
+and ready for Oussema to review.
