@@ -65,8 +65,9 @@ def cmd_create(args):
         name=f"FBO {mode}: Decision Estimation Game",
         description=(
             "A short estimation game where you guess averages based on "
-            "strategically revealed information. Takes about 8-10 minutes. "
-            "Accuracy bonus of up to GBP 0.50 on top of base payment."
+            "strategically revealed information. Takes about 13 minutes. "
+            "You will receive $2.00 base payment plus an accuracy-based "
+            "bonus of up to $2.00 depending on how well you perform."
         ),
         external_study_url=external_url,
         total_available_places=total,
