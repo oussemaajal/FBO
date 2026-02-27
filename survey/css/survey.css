@@ -290,6 +290,96 @@ body {
   text-align: center;
 }
 
+/* ---------- Slider Input ---------- */
+.slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 8px;
+  padding: 0 4px;
+}
+
+.slider-label {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  min-width: 24px;
+  text-align: center;
+}
+
+.slider-input {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider-input::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+}
+
+.slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.35);
+  cursor: grab;
+  margin-top: -10px;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.slider-input::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 12px rgba(67, 97, 238, 0.5);
+}
+
+.slider-input::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+.slider-input::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-border);
+  border: none;
+}
+
+.slider-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 3px solid #fff;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.35);
+  cursor: grab;
+}
+
+.slider-value-display {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  text-align: center;
+  margin: 4px 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 /* ---------- Text Input & Textarea ---------- */
 .text-input,
 .textarea-input {
@@ -446,6 +536,27 @@ body {
 
 .trial-slot:last-child {
   border-bottom: none;
+}
+
+/* ---------- Digit Canvas (anti-AI) ---------- */
+.digit-canvas {
+  display: inline-block;
+  vertical-align: middle;
+  image-rendering: auto;
+}
+
+.trial-disclosed-values-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.digit-separator {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  margin: 0 2px;
 }
 
 /* ---------- Consent Checkbox ---------- */
@@ -740,6 +851,16 @@ body {
 
   .trial-disclosed-value {
     font-size: 22px;
+  }
+
+  .slider-value-display {
+    font-size: 26px;
+  }
+
+  .slider-input::-webkit-slider-thumb {
+    width: 32px;
+    height: 32px;
+    margin-top: -12px;
   }
 
   .likert-options {

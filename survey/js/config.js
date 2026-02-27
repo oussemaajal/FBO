@@ -131,7 +131,7 @@ var SURVEY_CONFIG = {
 
         "<p><strong>Step 1:</strong> A random number generator gives the Sender a set of " +
         "numbers. Each number is between <strong>1 and 10</strong>. The set size varies " +
-        "across rounds (sometimes 2 numbers, sometimes 4, 6, or 8).</p>" +
+        "across rounds (sometimes 4 numbers, sometimes 6 or 8).</p>" +
 
         "<p><strong>Step 2:</strong> The Sender looks at their numbers and decides which " +
         "ones to <strong>reveal to you</strong>. They can choose to show you all of them, " +
@@ -169,13 +169,13 @@ var SURVEY_CONFIG = {
 
         "<p>Here is what you would see on your screen:</p>" +
 
-        // ── Condition-specific example visuals ──
+        // ── Condition-specific example visuals (canvas-rendered digits) ──
         "<!--if:explicit-->" +
           "<div class='trial-card'>" +
             "<div class='trial-header'>The Sender's numbers:</div>" +
             "<div class='trial-slot'>" +
               "<span class='trial-number-label'>Number 1:</span>" +
-              "<span class='trial-disclosed-value'>9</span>" +
+              "<canvas class='digit-canvas' data-d='9' width='60' height='72'></canvas>" +
             "</div>" +
             "<div class='trial-slot'>" +
               "<span class='trial-number-label'>Number 2:</span>" +
@@ -194,7 +194,9 @@ var SURVEY_CONFIG = {
         "<!--if:clean-->" +
           "<div class='trial-card'>" +
             "<div class='trial-header'>The Sender chose to show you:</div>" +
-            "<div class='trial-disclosed-value'>9</div>" +
+            "<div class='trial-disclosed-values-row'>" +
+              "<canvas class='digit-canvas' data-d='9' width='60' height='72'></canvas>" +
+            "</div>" +
           "</div>" +
         "<!--endif:clean-->" +
 
@@ -265,48 +267,28 @@ var SURVEY_CONFIG = {
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // TRIAL BLOCK (demo -- 4 trials for pilot)
+    // TRIAL BLOCK -- 9 trials (3x3 grid: N in {4,6,8} x k in {1,2,3})
     // ──────────────────────────────────────────────────────────────────
-    // Edit the trials array below to define your experiment stimuli.
-    // Each trial needs: id, N, k, disclosed[], hidden[], trueAverage
-    // The engine renders them based on the participant's condition.
+    // All disclosed means = 8.0 for clean cross-trial comparisons.
+    // Test A (anchoring to disclosure volume): hold k/N ~ constant, vary both
+    // Test B (adjustment to omission): hold k fixed, increase N
     {
       id: "trials",
       type: "trial_block",
       randomize: true,   // Shuffle trial order (seeded by Prolific PID)
       trials: [
-        {
-          id: "t1",
-          N: 2,
-          k: 1,
-          disclosed: [8],
-          hidden: [3],
-          trueAverage: 5.50
-        },
-        {
-          id: "t2",
-          N: 8,
-          k: 1,
-          disclosed: [8],
-          hidden: [7, 5, 4, 3, 2, 2, 1],
-          trueAverage: 4.00
-        },
-        {
-          id: "t3",
-          N: 2,
-          k: 1,
-          disclosed: [9],
-          hidden: [4],
-          trueAverage: 6.50
-        },
-        {
-          id: "t4",
-          N: 8,
-          k: 1,
-          disclosed: [9],
-          hidden: [8, 6, 5, 4, 3, 2, 1],
-          trueAverage: 4.75
-        }
+        // N=4
+        { id: "t1", N: 4, k: 1, disclosed: [8],       hidden: [4, 3, 1],             trueAverage: 4.00 },
+        { id: "t2", N: 4, k: 2, disclosed: [9, 7],    hidden: [3, 1],                trueAverage: 5.00 },
+        { id: "t3", N: 4, k: 3, disclosed: [9, 8, 7], hidden: [2],                   trueAverage: 6.50 },
+        // N=6
+        { id: "t4", N: 6, k: 1, disclosed: [8],       hidden: [5, 4, 3, 2, 1],       trueAverage: 3.83 },
+        { id: "t5", N: 6, k: 2, disclosed: [9, 7],    hidden: [5, 3, 2, 1],          trueAverage: 4.50 },
+        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 7], hidden: [4, 2, 1],             trueAverage: 5.17 },
+        // N=8
+        { id: "t7", N: 8, k: 1, disclosed: [8],       hidden: [6, 5, 4, 3, 2, 2, 1], trueAverage: 3.88 },
+        { id: "t8", N: 8, k: 2, disclosed: [9, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.00 },
+        { id: "t9", N: 8, k: 3, disclosed: [9, 8, 7], hidden: [5, 3, 2, 2, 1],       trueAverage: 4.63 }
       ]
     },
 

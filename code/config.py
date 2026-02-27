@@ -95,6 +95,9 @@ SURVEY_CONFIG = {
 
     # Google Sheets Apps Script endpoint for data collection
     'data_endpoint': 'https://script.google.com/macros/s/AKfycbyGF-wrCRMydHe726y-Iur7239XdLbJBD-BtGdFTUBgrsHRhFWB43SF_lyvEqbu4ZJ9/exec',
+
+    # Google Sheet ID for programmatic CSV export (read data without manual download)
+    'google_sheet_id': '1RHYjq2JekRCd3ZHEI6xq706j2WgES4Xg-YCa3E3iaUw',
 }
 
 # =============================================================================
@@ -130,28 +133,31 @@ EXPERIMENT_PARAMS = {
 # =============================================================================
 # PRE-GENERATED STIMULI (from experimental_design.md)
 # =============================================================================
-# Full study: 12 trials per participant
+# Full study: 9 trials (3x3 grid: N in {4,6,8} x k in {1,2,3})
+# All disclosed means = 8.0 for clean cross-trial comparisons
+# Test A (anchoring to disclosure volume): hold k/N ratio ~ constant, vary both
+# Test B (adjustment to omission): hold k fixed, increase N
 STIMULI_FULL = [
-    {'id': 't1',  'N': 2, 'k': 1, 'disclosed': [9],          'hidden': [4],                'trueAverage': 6.50},
-    {'id': 't2',  'N': 4, 'k': 1, 'disclosed': [8],          'hidden': [6, 3, 2],          'trueAverage': 4.75},
-    {'id': 't3',  'N': 4, 'k': 1, 'disclosed': [9],          'hidden': [7, 5, 1],          'trueAverage': 5.50},
-    {'id': 't4',  'N': 4, 'k': 2, 'disclosed': [8, 7],       'hidden': [4, 2],             'trueAverage': 5.25},
-    {'id': 't5',  'N': 6, 'k': 1, 'disclosed': [8],          'hidden': [7, 5, 4, 2, 1],    'trueAverage': 4.50},
-    {'id': 't6',  'N': 6, 'k': 2, 'disclosed': [9, 7],       'hidden': [6, 4, 2, 1],       'trueAverage': 4.83},
-    {'id': 't7',  'N': 6, 'k': 3, 'disclosed': [9, 7, 6],    'hidden': [5, 3, 1],          'trueAverage': 5.17},
-    {'id': 't8',  'N': 8, 'k': 1, 'disclosed': [9],          'hidden': [8, 6, 5, 4, 3, 2, 1], 'trueAverage': 4.75},
-    {'id': 't9',  'N': 8, 'k': 2, 'disclosed': [10, 8],      'hidden': [7, 5, 4, 3, 1, 1], 'trueAverage': 4.88},
-    {'id': 't10', 'N': 8, 'k': 4, 'disclosed': [9, 8, 7, 6], 'hidden': [5, 3, 2, 1],       'trueAverage': 5.13},
-    {'id': 't11', 'N': 2, 'k': 1, 'disclosed': [8],          'hidden': [3],                'trueAverage': 5.50},
-    {'id': 't12', 'N': 4, 'k': 2, 'disclosed': [9, 6],       'hidden': [5, 2],             'trueAverage': 5.50},
+    # N=4
+    {'id': 't1', 'N': 4, 'k': 1, 'disclosed': [8],       'hidden': [4, 3, 1],             'trueAverage': 4.00},
+    {'id': 't2', 'N': 4, 'k': 2, 'disclosed': [9, 7],    'hidden': [3, 1],                'trueAverage': 5.00},
+    {'id': 't3', 'N': 4, 'k': 3, 'disclosed': [9, 8, 7], 'hidden': [2],                   'trueAverage': 6.50},
+    # N=6
+    {'id': 't4', 'N': 6, 'k': 1, 'disclosed': [8],       'hidden': [5, 4, 3, 2, 1],       'trueAverage': 3.83},
+    {'id': 't5', 'N': 6, 'k': 2, 'disclosed': [9, 7],    'hidden': [5, 3, 2, 1],          'trueAverage': 4.50},
+    {'id': 't6', 'N': 6, 'k': 3, 'disclosed': [9, 8, 7], 'hidden': [4, 2, 1],             'trueAverage': 5.17},
+    # N=8
+    {'id': 't7', 'N': 8, 'k': 1, 'disclosed': [8],       'hidden': [6, 5, 4, 3, 2, 2, 1], 'trueAverage': 3.88},
+    {'id': 't8', 'N': 8, 'k': 2, 'disclosed': [9, 7],    'hidden': [5, 4, 3, 2, 1, 1],    'trueAverage': 4.00},
+    {'id': 't9', 'N': 8, 'k': 3, 'disclosed': [9, 8, 7], 'hidden': [5, 3, 2, 2, 1],       'trueAverage': 4.63},
 ]
 
-# Pilot: 4 trials (extreme N contrast, k=1 throughout)
+# Pilot: 4 trials (corners of NxK grid, preserving Test A and Test B comparisons)
 STIMULI_PILOT = [
-    {'id': 'p1', 'N': 2, 'k': 1, 'disclosed': [8], 'hidden': [3],                   'trueAverage': 5.50},
-    {'id': 'p2', 'N': 8, 'k': 1, 'disclosed': [8], 'hidden': [7, 5, 4, 3, 2, 2, 1], 'trueAverage': 4.00},
-    {'id': 'p3', 'N': 2, 'k': 1, 'disclosed': [9], 'hidden': [4],                   'trueAverage': 6.50},
-    {'id': 'p4', 'N': 8, 'k': 1, 'disclosed': [9], 'hidden': [8, 6, 5, 4, 3, 2, 1], 'trueAverage': 4.75},
+    {'id': 'p1', 'N': 4, 'k': 1, 'disclosed': [8],       'hidden': [4, 3, 1],             'trueAverage': 4.00},
+    {'id': 'p2', 'N': 8, 'k': 1, 'disclosed': [8],       'hidden': [6, 5, 4, 3, 2, 2, 1], 'trueAverage': 3.88},
+    {'id': 'p3', 'N': 4, 'k': 3, 'disclosed': [9, 8, 7], 'hidden': [2],                   'trueAverage': 6.50},
+    {'id': 'p4', 'N': 8, 'k': 3, 'disclosed': [9, 8, 7], 'hidden': [5, 3, 2, 2, 1],       'trueAverage': 4.63},
 ]
 
 # =============================================================================
