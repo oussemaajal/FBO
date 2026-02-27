@@ -71,8 +71,8 @@ var SURVEY_CONFIG = {
   bonus: {
     enabled: true,
     currency: "USD",
-    baseAmount: 2.00,
-    penaltyPerUnit: 0.40,
+    baseAmount: 3.00,
+    penaltyPerUnit: 0.60,
     floor: 0.00,
     selectionMethod: "random_trial"
   },
@@ -91,9 +91,9 @@ var SURVEY_CONFIG = {
       title: "Welcome to this Research Study",
       subtitle: "Thank you for participating.",
       body: "<p>In this study, you will play a short estimation game. " +
-            "It takes approximately <strong>13 minutes</strong> to complete.</p>" +
-            "<p>You will receive <strong>$2.00 base payment</strong> plus an " +
-            "<strong>accuracy-based bonus of up to $2.00</strong> depending on how " +
+            "It takes approximately <strong>15 minutes</strong> to complete.</p>" +
+            "<p>You will receive <strong>$3.00 base payment</strong> plus an " +
+            "<strong>accuracy-based bonus of up to $3.00</strong> depending on how " +
             "well you perform.</p>" +
             "<p>Your responses are anonymous and will be used for academic research only.</p>" +
             "<p>Please complete this study on a <strong>desktop or laptop computer</strong> " +
@@ -112,9 +112,9 @@ var SURVEY_CONFIG = {
             "decision-making under uncertainty.</p>" +
             "<p><strong>What you will do:</strong> You will play an estimation game " +
             "involving numbers and answer a few questions afterward.</p>" +
-            "<p><strong>Time:</strong> Approximately 13 minutes.</p>" +
-            "<p><strong>Compensation:</strong> You will receive a $2.00 base payment " +
-            "plus an accuracy-based bonus of up to $2.00 depending on how close your " +
+            "<p><strong>Time:</strong> Approximately 15 minutes.</p>" +
+            "<p><strong>Compensation:</strong> You will receive a $3.00 base payment " +
+            "plus an accuracy-based bonus of up to $3.00 depending on how close your " +
             "guesses are to the true averages.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
@@ -122,7 +122,8 @@ var SURVEY_CONFIG = {
             "<p><strong>Voluntary:</strong> You may withdraw at any time by closing " +
             "this window. Partial data will not be used.</p>",
       mustAgree: true,
-      declineMessage: "You must agree to participate in order to continue with this study."
+      declineMessage: "You must agree to participate in order to continue with this study.",
+      minTimeSeconds: 20
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -252,7 +253,7 @@ var SURVEY_CONFIG = {
         "<p>At the end of the study, one round will be randomly selected. " +
         "Your bonus depends on <strong>how close your guess was to the true " +
         "average</strong> in that round. The closer you are, the more you earn " +
-        "(up to $2.00).</p>" +
+        "(up to $3.00).</p>" +
 
         "<p style='padding:16px; background:#f0f4ff; border-radius:8px; " +
         "border-left:4px solid var(--color-primary);'>" +
@@ -300,6 +301,7 @@ var SURVEY_CONFIG = {
                         "They show you higher numbers and hide the lower ones."
         }
       ],
+      minTimeSeconds: 20,
       maxAttempts: 2,
       failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
                    "We are unable to include your responses in the study. Thank you for your time."
@@ -424,7 +426,8 @@ var SURVEY_CONFIG = {
         { value: "agree", label: "Agree" },
         { value: "strongly_agree", label: "Strongly Agree" }
       ],
-      correctAnswer: "strongly_disagree"
+      correctAnswer: "strongly_disagree",
+      minTimeSeconds: 20
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -434,6 +437,7 @@ var SURVEY_CONFIG = {
       id: "demographics",
       type: "questionnaire",
       title: "About You",
+      minTimeSeconds: 20,
       questions: [
         {
           id: "age",
