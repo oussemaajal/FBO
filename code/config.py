@@ -107,8 +107,10 @@ EXPERIMENT_PARAMS = {
     # Randomization
     'seed': 42,
 
-    # Conditions (between-subjects: Clean vs Explicit display format)
-    'conditions': ['clean', 'explicit'],
+    # Conditions (within-subjects: order counterbalancing)
+    # Every participant sees both clean and explicit formats.
+    # The condition determines which format comes first.
+    'conditions': ['clean_first', 'explicit_first'],
 
     # Full experiment
     'n_per_condition': 120,  # 120 per condition = 240 total

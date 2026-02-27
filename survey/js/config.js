@@ -13,7 +13,7 @@
    - Study metadata (title, version)
    - Data endpoint (Google Sheets Apps Script URL)
    - Prolific integration (completion code, redirect URL)
-   - Between-subjects conditions
+   - Within-subjects conditions (order counterbalancing)
    - Bonus calculation parameters
    - Full page sequence (welcome, consent, instructions, trials, etc.)
 
@@ -39,7 +39,7 @@ var SURVEY_CONFIG = {
 
   // ── Study Metadata ───────────────────────────────────────────────────
   title: "Decision Study",
-  version: "0.1.0-demo",
+  version: "0.2.0-within",
 
   // ── Data Endpoint ────────────────────────────────────────────────────
   // Google Sheets Apps Script URL. Set this after deploying the backend.
@@ -51,10 +51,11 @@ var SURVEY_CONFIG = {
   completionCode: "C1DT2DOB",
   completionUrl: "https://app.prolific.com/submissions/complete?cc=C1DT2DOB",
 
-  // ── Between-Subjects Conditions ──────────────────────────────────────
-  // Participants are assigned to one condition based on a hash of their
-  // Prolific PID. This ensures balanced, deterministic assignment.
-  conditions: ["clean", "explicit"],
+  // ── Within-Subjects Conditions (order counterbalancing) ─────────────
+  // Every participant sees BOTH clean and explicit formats (9 trials each,
+  // 18 total). The "condition" determines which format comes first.
+  // Assigned deterministically via hash of Prolific PID.
+  conditions: ["clean_first", "explicit_first"],
 
   // ── Bonus Parameters ─────────────────────────────────────────────────
   // After all trials, one trial is selected at random.
@@ -82,7 +83,7 @@ var SURVEY_CONFIG = {
       title: "Welcome to this Research Study",
       subtitle: "Thank you for participating.",
       body: "<p>In this study, you will play a short estimation game. " +
-            "It takes approximately <strong>8-10 minutes</strong> to complete.</p>" +
+            "It takes approximately <strong>12-15 minutes</strong> to complete.</p>" +
             "<p>Your responses are anonymous and will be used for academic research only.</p>" +
             "<p>Please complete this study on a <strong>desktop or laptop computer</strong> " +
             "for the best experience.</p>",
@@ -100,7 +101,7 @@ var SURVEY_CONFIG = {
             "decision-making under uncertainty.</p>" +
             "<p><strong>What you will do:</strong> You will play an estimation game " +
             "involving numbers and answer a few questions afterward.</p>" +
-            "<p><strong>Time:</strong> Approximately 8-10 minutes.</p>" +
+            "<p><strong>Time:</strong> Approximately 12-15 minutes.</p>" +
             "<p><strong>Compensation:</strong> You will receive your Prolific payment " +
             "plus an accuracy-based bonus of up to $1.00.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
@@ -167,46 +168,47 @@ var SURVEY_CONFIG = {
         "<p>The Sender wants you to guess high, so they decide to show you " +
         "<strong>only the 10</strong> and hide the rest.</p>" +
 
-        "<p>Here is what you would see on your screen:</p>" +
+        "<p>During this study, you will see the Sender's choices presented in " +
+        "<strong>two different formats</strong>. Here is how each one looks:</p>" +
 
-        // ── Condition-specific example visuals (canvas-rendered digits) ──
-        "<!--if:explicit-->" +
-          "<div class='trial-card'>" +
-            "<div class='trial-header'>The Sender's numbers:</div>" +
-            "<div class='trial-slot'>" +
-              "<span class='trial-number-label'>Number 1:</span>" +
-              "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
-            "</div>" +
-            "<div class='trial-slot'>" +
-              "<span class='trial-number-label'>Number 2:</span>" +
-              "<span class='trial-hidden-value'>[Not shown]</span>" +
-            "</div>" +
-            "<div class='trial-slot'>" +
-              "<span class='trial-number-label'>Number 3:</span>" +
-              "<span class='trial-hidden-value'>[Not shown]</span>" +
-            "</div>" +
-            "<div class='trial-slot'>" +
-              "<span class='trial-number-label'>Number 4:</span>" +
-              "<span class='trial-hidden-value'>[Not shown]</span>" +
-            "</div>" +
+        // ── Format A: Numbers only (clean) ──
+        "<h3 style='margin-top:24px;'>Format A: Numbers only</h3>" +
+        "<div class='trial-card'>" +
+          "<div class='trial-header'>The Sender chose to show you:</div>" +
+          "<div class='trial-disclosed-values-row'>" +
+            "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
           "</div>" +
-        "<!--endif:explicit-->" +
-        "<!--if:clean-->" +
-          "<div class='trial-card'>" +
-            "<div class='trial-header'>The Sender chose to show you:</div>" +
-            "<div class='trial-disclosed-values-row'>" +
-              "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
-            "</div>" +
+        "</div>" +
+
+        // ── Format B: All slots visible (explicit) ──
+        "<h3 style='margin-top:24px;'>Format B: All slots visible</h3>" +
+        "<div class='trial-card'>" +
+          "<div class='trial-header'>The Sender's numbers:</div>" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 1:</span>" +
+            "<canvas class='digit-canvas' data-d='10' width='60' height='72'></canvas>" +
           "</div>" +
-        "<!--endif:clean-->" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 2:</span>" +
+            "<span class='trial-hidden-value'>[Not shown]</span>" +
+          "</div>" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 3:</span>" +
+            "<span class='trial-hidden-value'>[Not shown]</span>" +
+          "</div>" +
+          "<div class='trial-slot'>" +
+            "<span class='trial-number-label'>Number 4:</span>" +
+            "<span class='trial-hidden-value'>[Not shown]</span>" +
+          "</div>" +
+        "</div>" +
 
-        "<p>In this example, the Sender has 4 numbers total but chose to reveal " +
-        "only one of them. The number they showed you is a <strong>10</strong>. " +
-        "Your task is to guess what the average of <em>all 4 numbers</em> is.</p>" +
+        "<p>Both formats show the same information -- the Sender has 4 numbers " +
+        "and chose to reveal only the <strong>10</strong>. The only difference " +
+        "is how it is displayed.</p>" +
 
-        "<p>If you guessed <strong>5.00</strong>, you would be exactly right! " +
-        "But of course, you would not know the hidden numbers, so you have to " +
-        "use your judgement.</p>" +
+        "<p>In this example, if you guessed <strong>5.00</strong>, you would be " +
+        "exactly right! But of course, you would not know the hidden numbers, " +
+        "so you have to use your judgement.</p>" +
 
         "<h3 style='margin-top:28px;'>Your bonus</h3>" +
 
@@ -267,17 +269,74 @@ var SURVEY_CONFIG = {
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // TRIAL BLOCK -- 9 trials (3x3 grid: N in {4,6,8} x k in {1,2,3})
+    // TRIAL BLOCK 1 -- 9 trials in first display format
     // ──────────────────────────────────────────────────────────────────
-    // Disclosed values vary across trials for naturalistic variation.
-    // Disclosed values are always the top-k values (strategic sender).
-    // Test A (anchoring to disclosure volume): hold k/N ~ constant, vary both
-    // Test B (adjustment to omission): hold k fixed, increase N
+    // Within-subjects: each participant sees all 9 trials twice (once per
+    // format). Block 1 uses format A, Block 2 uses format B, where A/B
+    // depend on the condition (clean_first or explicit_first).
+    // Disclosed values vary across trials (always top-k, strategic sender).
     {
-      id: "trials",
+      id: "trials_block1",
       type: "trial_block",
-      randomize: true,   // Shuffle trial order (seeded by Prolific PID)
+      block: 1,
+      randomize: true,
       trials: [
+        // N=4
+        { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
+        { id: "t2", N: 4, k: 2, disclosed: [9, 6],     hidden: [3, 2],                trueAverage: 5.00 },
+        { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
+        // N=6
+        { id: "t4", N: 6, k: 1, disclosed: [7],        hidden: [5, 4, 3, 2, 1],       trueAverage: 3.67 },
+        { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
+        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
+        // N=8
+        { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        { id: "t8", N: 8, k: 2, disclosed: [10, 7],    hidden: [5, 4, 3, 2, 1, 1],    trueAverage: 4.13 },
+        { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
+      ]
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // TRANSITION -- between Block 1 and Block 2
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "block_transition",
+      type: "transition",
+      title: "Part 2 of 2",
+      body:
+        "<p>You have completed Part 1. Great job!</p>" +
+
+        "<p>In Part 2, you will play <strong>9 more rounds</strong> of the same " +
+        "estimation game, but the information will be presented in a <strong>different " +
+        "format</strong>.</p>" +
+
+        "<!--if:clean_first-->" +
+        "<p>In Part 1, you only saw the numbers the Sender chose to reveal. " +
+        "In Part 2, you will see <strong>all slots</strong> -- the revealed numbers " +
+        "plus <em>[Not shown]</em> markers for the hidden ones.</p>" +
+        "<!--endif:clean_first-->" +
+
+        "<!--if:explicit_first-->" +
+        "<p>In Part 1, you saw all slots with <em>[Not shown]</em> markers for " +
+        "hidden numbers. In Part 2, you will see <strong>only the numbers</strong> " +
+        "the Sender chose to reveal.</p>" +
+        "<!--endif:explicit_first-->" +
+
+        "<p>The game itself is identical -- the same Sender incentives, the same " +
+        "types of numbers. Only the display format changes.</p>",
+      minTimeSeconds: 10
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // TRIAL BLOCK 2 -- 9 trials in second display format
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "trials_block2",
+      type: "trial_block",
+      block: 2,
+      randomize: true,
+      trials: [
+        // Same 9 trials, re-randomized independently for Block 2
         // N=4
         { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
         { id: "t2", N: 4, k: 2, disclosed: [9, 6],     hidden: [3, 2],                trueAverage: 5.00 },

@@ -141,6 +141,7 @@
     this.minTimeTimer = null;
     this.minTimeReady = true;
     this.submitted = false;
+    this.blockBoundaryIndices = [];  // Page indices where blocks start (no going back)
 
     // DOM refs
     this.elContent = document.getElementById('pageContent');
@@ -208,29 +209,67 @@
     return conditions[hash % conditions.length];
   };
 
+  // ── Display Format for Block ────────────────────────────────────────────
+  // Maps (condition, block number) to display format ('clean' or 'explicit').
+  SurveyEngine.prototype.getDisplayFormat = function (block) {
+    if (this.condition === 'clean_first') {
+      return block === 1 ? 'clean' : 'explicit';
+    } else if (this.condition === 'explicit_first') {
+      return block === 1 ? 'explicit' : 'clean';
+    }
+    // Fallback for legacy conditions
+    return this.condition;
+  };
+
   // ── Build Page Sequence ────────────────────────────────────────────────
   SurveyEngine.prototype.buildPageSequence = function () {
     var self = this;
     this.pages = [];
+    this.blockBoundaryIndices = [];
 
     (this.config.pages || []).forEach(function (page) {
       if (page.type === 'trial_block') {
+        var block = page.block || 1;
+        var displayFormat = self.getDisplayFormat(block);
+
         // Expand trial block into individual trial pages
         var trials = (page.trials || []).slice();
         if (page.randomize && self.prolificPID) {
-          var seed = hashString(self.prolificPID + '_trials');
+          // Block-specific seed so Block 1 and Block 2 have independent orders
+          var seed = hashString(self.prolificPID + '_trials_block' + block);
           trials = seededShuffle(trials, seed);
         }
+
+        // Record block boundary (first page of this block)
+        self.blockBoundaryIndices.push(self.pages.length);
+
         trials.forEach(function (trial, idx) {
+          // N-intro page before each trial
           self.pages.push({
-            id: trial.id || ('trial_' + idx),
+            id: trial.id + '_intro_b' + block,
+            type: 'trial_intro',
+            trial: trial,
+            trialIndex: idx,
+            totalTrials: trials.length,
+            block: block,
+            displayFormat: displayFormat
+          });
+          // Trial page
+          self.pages.push({
+            id: trial.id + '_b' + block,
             type: 'trial',
             trial: trial,
             trialIndex: idx,
             totalTrials: trials.length,
+            block: block,
+            displayFormat: displayFormat,
             blockId: page.id
           });
         });
+      } else if (page.type === 'transition') {
+        // Record transition as a block boundary (no going back past this)
+        self.blockBoundaryIndices.push(self.pages.length);
+        self.pages.push(page);
       } else {
         self.pages.push(page);
       }
@@ -270,7 +309,9 @@
         case 'consent':        html = self.renderConsent(page); break;
         case 'instructions':   html = self.renderInstructions(page); break;
         case 'comprehension':  html = self.renderComprehension(page); break;
+        case 'trial_intro':    html = self.renderTrialIntro(page); break;
         case 'trial':          html = self.renderTrial(page); break;
+        case 'transition':     html = self.renderTransition(page); break;
         case 'attention_check': html = self.renderAttentionCheck(page); break;
         case 'questionnaire':  html = self.renderQuestionnaire(page); break;
         case 'debrief':        html = self.renderDebrief(page); break;
@@ -287,14 +328,18 @@
       var showNav = page.type !== 'debrief';
       self.elNavButtons.style.display = showNav ? '' : 'none';
 
-      // Back button: hidden on first page and certain types
+      // Back button: hidden on first page, certain types, and block boundaries
+      var atBoundary = self.blockBoundaryIndices.indexOf(index) !== -1;
       var noBack = index === 0 || page.type === 'welcome' || page.type === 'debrief'
-                   || page.type === 'comprehension';
+                   || page.type === 'comprehension' || page.type === 'transition'
+                   || atBoundary;
       self.elBtnBack.style.display = noBack ? 'none' : '';
 
       // Next button text
       if (page.type === 'welcome') {
         self.elBtnNext.textContent = page.buttonText || 'Begin';
+      } else if (page.type === 'transition') {
+        self.elBtnNext.textContent = 'Begin Part 2';
       } else if (index === self.pages.length - 2) {
         self.elBtnNext.textContent = 'Submit';
       } else {
@@ -463,6 +508,10 @@
 
   SurveyEngine.prototype.prevPage = function () {
     if (this.currentPageIndex > 0) {
+      // Don't go back past a block boundary
+      if (this.blockBoundaryIndices.indexOf(this.currentPageIndex) !== -1) {
+        return;
+      }
       this.recordPageEnd(this.currentPageIndex);
       this.renderPage(this.currentPageIndex - 1);
     }
@@ -607,12 +656,16 @@
     if (page.type === 'trial' && page.trial) {
       var guess = document.getElementById('trial_guess');
       if (guess) {
-        this.trialGuesses[page.trial.id] = {
+        // Key by page.id (e.g., 't1_b1') to distinguish Block 1 vs Block 2
+        this.trialGuesses[page.id] = {
           guess: parseFloat(guess.value),
           trueAverage: page.trial.trueAverage,
           N: page.trial.N,
           k: page.trial.k,
-          disclosed: page.trial.disclosed
+          disclosed: page.trial.disclosed,
+          trialId: page.trial.id,
+          block: page.block || 1,
+          displayFormat: page.displayFormat || this.condition
         };
       }
     }
@@ -641,6 +694,8 @@
 
       // Experiment
       condition: this.condition,
+      block1Format: this.getDisplayFormat(1),
+      block2Format: this.getDisplayFormat(2),
 
       // Responses (all pages)
       responses: this.responses,
@@ -914,24 +969,55 @@
     return html;
   };
 
+  // Trial Intro (N-intro splash page before each trial)
+  SurveyEngine.prototype.renderTrialIntro = function (page) {
+    var trial = page.trial;
+    var html = '';
+
+    html += '<div class="page-subtitle">Round ' + (page.trialIndex + 1) +
+            ' of ' + page.totalTrials + ' &mdash; Part ' + page.block + '</div>';
+
+    html += '<div class="n-intro-display">';
+    html += '<div class="n-intro-label">In this round, the Sender received</div>';
+    html += '<div class="n-intro-number">' + trial.N + '</div>';
+    html += '<div class="n-intro-label">numbers</div>';
+    html += '</div>';
+
+    return html;
+  };
+
+  // Transition page (between Block 1 and Block 2)
+  SurveyEngine.prototype.renderTransition = function (page) {
+    var html = '';
+    html += '<h1 class="page-title">' + (page.title || 'Next Part') + '</h1>';
+    var body = page.body || '';
+    // Process condition templates (same as instructions)
+    var self = this;
+    body = body.replace(/<!--if:(\w+)-->([\s\S]*?)<!--endif:\1-->/g,
+      function (match, cond, inner) {
+        return cond === self.condition ? inner : '';
+      }
+    );
+    html += '<div class="page-body">' + body + '</div>';
+    return html;
+  };
+
   // Trial
   SurveyEngine.prototype.renderTrial = function (page) {
     var trial = page.trial;
-    var condition = this.condition;
+    var displayFormat = page.displayFormat || this.condition;
+    var block = page.block || 1;
     var html = '';
 
     // Initialize pending canvases registry for this render
     this._pendingCanvases = this._pendingCanvases || {};
 
     html += '<div class="page-subtitle">Round ' + (page.trialIndex + 1) +
-            ' of ' + page.totalTrials + '</div>';
-
-    html += '<p class="page-body">In this round, the Sender has <strong>' +
-            trial.N + ' numbers</strong> (each between 1 and 10).</p>';
+            ' of ' + page.totalTrials + ' &mdash; Part ' + block + '</div>';
 
     html += '<div class="trial-card">';
 
-    if (condition === 'explicit') {
+    if (displayFormat === 'explicit') {
       // Show all N slots
       html += '<div class="trial-header">The Sender\'s numbers:</div>';
       var disclosedIdx = 0;
@@ -939,7 +1025,7 @@
         html += '<div class="trial-slot">';
         html += '<span class="trial-number-label">Number ' + (i + 1) + ':</span>';
         if (disclosedIdx < trial.disclosed.length) {
-          var canvasId = 'dc_' + disclosedIdx + '_' + trial.id;
+          var canvasId = 'dc_' + disclosedIdx + '_' + trial.id + '_b' + block;
           this._pendingCanvases[canvasId] = trial.disclosed[disclosedIdx];
           html += '<canvas id="' + canvasId + '" class="digit-canvas" width="60" height="72"></canvas>';
           disclosedIdx++;
@@ -953,7 +1039,7 @@
       html += '<div class="trial-header">The Sender chose to show you:</div>';
       html += '<div class="trial-disclosed-values-row">';
       for (var di = 0; di < trial.disclosed.length; di++) {
-        var canvasId = 'dc_' + di + '_' + trial.id;
+        var canvasId = 'dc_' + di + '_' + trial.id + '_b' + block;
         this._pendingCanvases[canvasId] = trial.disclosed[di];
         html += '<canvas id="' + canvasId + '" class="digit-canvas" width="60" height="72"></canvas>';
         if (di < trial.disclosed.length - 1) {
