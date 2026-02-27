@@ -158,3 +158,92 @@ reusable. The demo config shows every feature.
 5. Set the GitHub Pages URL in SURVEY_CONFIG in config.js and code/config.py
 6. Create Prolific study pointing to the GitHub Pages URL
 7. Test end-to-end: Prolific link -> survey -> submission -> Sheet row
+
+---
+
+## 2026-02-26 | Session 3: Pilot completed, survey redesign
+
+**Goal:** Run pilot study, analyze results, redesign survey based on findings.
+
+**What happened:**
+
+1. **Deployed survey to GitHub Pages**: Set up gh-pages branch with survey files at
+   root level. Configured Google Sheets data endpoint and Prolific completion code
+   in config.js.
+
+2. **Prolific pilot study (n=10)**: Created study 69a069767639e75a7bc2b117 on Prolific.
+   Applied eligibility filters (US only, approval rate >= 95%) via Prolific API. The
+   `eligibility_requirements` field was deprecated; used `filters` field instead.
+   Study completed with all 10 participants.
+
+3. **Pilot data analysis**: Downloaded data programmatically via Google Sheets CSV export
+   (sheet ID: 1RHYjq2JekRCd3ZHEI6xq706j2WgES4Xg-YCa3E3iaUw). Found 16 rows total
+   (10 real, 6 test/debug). Produced comprehensive pilot report at
+   output/pilot/pilot_report.txt. Key findings: near-zero treatment effect (clean -0.09
+   vs explicit +0.00 bias), but interesting N x condition pattern, and all participants
+   showed substantial sophistication (most reported believing hidden numbers were low).
+
+4. **Three-part survey redesign implemented:**
+
+   a. **Slider input** (replaces number input): Range slider from 1.0-10.0, step 0.1,
+      starting at midpoint 5.5. Live value display above slider. Must-touch validation
+      (data-touched attribute prevents submission at default). Less cognitive burden than
+      typing a precise decimal.
+
+   b. **9-trial NxK stimulus grid**: 3x3 design with N in {4,6,8} and k in {1,2,3}.
+      Enables two orthogonal tests:
+      - Test A (anchoring to disclosure volume): hold k/N ratio ~constant, vary both
+      - Test B (adjustment to omission): hold k fixed, increase N
+      Initially all disclosed means were 8.0 (identical disclosed values within k level).
+
+   c. **Canvas-rendered digits** (anti-AI): Numbers drawn on HTML5 canvas with random
+      rotation, position jitter, background noise dots, and subtle noise lines. DOM
+      contains only <canvas> elements with no text -- invisible to text-based AI/bots.
+      Trial page digits stored in JS _pendingCanvases map (no data attributes); instruction
+      page examples use data-d attributes (acceptable since surrounding text describes them).
+
+5. **Stimulus variation (second iteration)**: Oussema flagged two issues:
+   - Instruction example used same values (showing 9) as trial stimuli
+   - All trials within each k level had identical disclosed values
+
+   Redesigned: disclosed values now vary across all 9 trials. k=1 uses [8], [7], [9];
+   k=2 uses [9,6], [8,7], [10,7]; k=3 uses [10,7,6], [9,8,5], [8,7,6]. All disclosed
+   values are always the top-k in the full set (strategic sender). Instruction example
+   changed to Sender with [1,4,5,10] showing only [10] (true avg 5.00) -- doesn't match
+   any trial setup. Comprehension check updated to match. Canvas font size reduced for
+   two-digit numbers (30px vs 36px for single digits).
+
+**Deployment issues encountered and fixed:**
+- First gh-pages deploy had stale files (git stash before checkout pulled pre-stash
+  versions). Fixed by committing on main first, then pulling from committed state.
+- .env file briefly leaked to gh-pages history; flagged to Oussema that Prolific API
+  token should be regenerated.
+
+**Current stimulus grid (final):**
+
+| ID | N | k | Disclosed    | Hidden            | True Avg |
+|----|---|---|-------------|-------------------|----------|
+| t1 | 4 | 1 | [8]         | [4, 3, 1]         | 4.00     |
+| t2 | 4 | 2 | [9, 6]      | [3, 2]            | 5.00     |
+| t3 | 4 | 3 | [10, 7, 6]  | [1]               | 6.00     |
+| t4 | 6 | 1 | [7]         | [5, 4, 3, 2, 1]   | 3.67     |
+| t5 | 6 | 2 | [8, 7]      | [5, 3, 2, 1]      | 4.33     |
+| t6 | 6 | 3 | [9, 8, 5]   | [3, 2, 1]         | 4.67     |
+| t7 | 8 | 1 | [9]         | [6,5,4,3,2,1,1]   | 3.88     |
+| t8 | 8 | 2 | [10, 7]     | [5,4,3,2,1,1]     | 4.13     |
+| t9 | 8 | 3 | [8, 7, 6]   | [5,3,2,2,1]       | 4.25     |
+
+**Key design principle from Oussema:** Do not interpret results relative to true
+averages as a normative benchmark. The right comparison is always between conditions
+holding trials fixed -- how does the guess change when the display format changes?
+We don't know what participants "should" guess.
+
+**Where this leaves the project:**
+Survey redesign complete and deployed to gh-pages. All changes verified locally
+(slider, canvas rendering, 9 trials, varied disclosed values, new example). Ready
+for Oussema to review live at https://oussemaajal.github.io/FBO/
+
+**Next session should probably:**
+1. Oussema reviews the live survey and gives feedback
+2. Run full pilot (n=80) or move to full study (n=240)
+3. Build analysis pipeline for 9-trial NxK design

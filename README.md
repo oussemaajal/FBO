@@ -36,17 +36,19 @@ Accuracy-based bonus: up to GBP 0.50 per participant.
 
 ### Within-Subjects Variation
 
-- N in {2, 4, 6, 8} (set size)
-- Disclosure fraction varies across trials
-- 12 trials (full) or 4 trials (pilot) per participant, randomized order
+- N in {4, 6, 8} (set size)
+- k in {1, 2, 3} (number disclosed)
+- 9 trials per participant (3x3 NxK grid), randomized order
+- Disclosed values vary across trials (always top-k, strategic sender)
 
 ## Current Status
 
-**Phase:** Survey infrastructure complete, experiment content pending
+**Phase:** Survey deployed, pilot (n=10) completed, redesign deployed
 
 **What's built:**
 - Custom web survey engine (config-driven, generic, reusable)
-- Professional UI with responsive design
+- Professional UI with responsive design, slider input for guesses
+- Canvas-rendered digits (anti-AI: no text in DOM)
 - Bot/AI detection (honeypot, invisible instruction, behavioral tracking)
 - Comprehension checks with remedial flow
 - Min-time enforcement on instruction pages
@@ -55,12 +57,12 @@ Accuracy-based bonus: up to GBP 0.50 per participant.
 - localStorage backup for mid-survey resume
 - Google Sheets backend (Apps Script)
 - Prolific CLI tool for study management
+- Deployed to GitHub Pages: https://oussemaajal.github.io/FBO/
 
-**What's needed:**
-1. Fill in experiment content in `survey/js/config.js`
-2. Set up Google Sheet + Apps Script backend
-3. Deploy survey to GitHub Pages
-4. Run pilot study
+**What's next:**
+1. Review redesigned survey
+2. Run full pilot (n=80) or proceed to full study (n=240)
+3. Build analysis pipeline for 9-trial NxK design
 
 ## Directory Structure
 
