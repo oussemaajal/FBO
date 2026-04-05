@@ -1061,8 +1061,8 @@
       var self = this;
       setTimeout(function () {
         self.elNavButtons.style.display = '';
-        self.currentPageIndex++;
-        self.renderPage();
+        var nextIdx = self.currentPageIndex + 1;
+        self.renderPage(nextIdx);
       }, 2000);
     } else {
       // Failed
