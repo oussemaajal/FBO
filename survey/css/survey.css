@@ -140,7 +140,7 @@ body {
 
 /* ---------- Typography ---------- */
 .page-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--color-text);
   margin-bottom: 8px;
@@ -148,14 +148,14 @@ body {
 }
 
 .page-subtitle {
-  font-size: 15px;
+  font-size: 17px;
   color: var(--color-text-secondary);
   margin-bottom: 24px;
 }
 
 .page-body {
-  font-size: 16px;
-  line-height: 1.7;
+  font-size: 17px;
+  line-height: 1.75;
   color: var(--color-text);
   margin-bottom: 24px;
 }
@@ -183,7 +183,7 @@ body {
 }
 
 .question-prompt {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 16px;
@@ -762,16 +762,41 @@ body {
 }
 
 /* ---------- Remedial Message ---------- */
-.remedial-box {
-  background: #fff8e1;
-  border-left: 4px solid var(--color-warning);
-  padding: 16px 20px;
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  margin: 16px 0;
+/* ---------- Quiz Results ---------- */
+.comp-result-item {
+  padding: 12px 16px;
+  margin: 8px 0;
+  border-radius: var(--radius-md);
+  font-size: 16px;
+  line-height: 1.5;
 }
 
-.remedial-box p {
-  margin-bottom: 8px;
+.comp-result-correct {
+  background: #f0fdf4;
+  border-left: 4px solid #22c55e;
+}
+
+.comp-result-wrong {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+
+.comp-result-icon {
+  font-weight: 700;
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+.comp-result-correct .comp-result-icon {
+  color: #22c55e;
+}
+
+.comp-result-wrong .comp-result-icon {
+  color: #ef4444;
+}
+
+.comp-result-prompt {
+  color: var(--color-text);
 }
 
 /* ---------- Bonus Display ---------- */
@@ -853,6 +878,22 @@ body {
   pointer-events: none;
 }
 
+/* ---------- Stealth AI Check ---------- */
+/* Positioned off-screen but input remains fillable via JS/DOM.
+   An AI reading the DOM sees the label+input and may fill it.
+   A human never scrolls to -9999px. */
+.stealth-check {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  opacity: 0;
+  pointer-events: none;
+}
+.stealth-check input {
+  width: 200px;
+  height: 30px;
+}
+
 /* ---------- Prolific ID Fallback ---------- */
 .pid-fallback {
   margin-top: 16px;
@@ -911,19 +952,19 @@ body {
 }
 
 .player-label {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .player-desc {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--color-text-secondary);
   margin-top: 2px;
 }
 
 .player-vs {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-text-muted);
 }
@@ -951,24 +992,24 @@ body {
 
 /* ---------- Example Box ---------- */
 .example-box {
-  background: #f8f4ff;
-  border: 1px solid #d8c8f8;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
   border-radius: var(--radius-md);
   padding: 16px 20px;
   margin: 16px 0;
 }
 
 .example-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--color-primary);
+  color: #6c757d;
   margin-bottom: 8px;
 }
 
 .example-note {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--color-text-secondary);
   font-style: italic;
   margin-top: 8px;
@@ -998,13 +1039,66 @@ body {
 }
 
 .callout-warning {
-  background: #fff8e6;
-  border-left: 4px solid var(--color-warning);
+  background: #f8f9fa;
+  border-left: 3px solid #adb5bd;
 }
 
 .callout-info {
-  background: #f0f4ff;
-  border-left: 4px solid var(--color-primary);
+  background: #f8f9fa;
+  border-left: 3px solid #adb5bd;
+}
+
+/* ---------- Payoff Visual ---------- */
+.payoff-visual {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.payoff-card {
+  flex: 1;
+  min-width: 200px;
+  max-width: 300px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+  background: #f8f9fa;
+}
+
+.payoff-header {
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 16px;
+  text-align: center;
+  color: var(--color-text);
+  border-bottom: 1px solid #dee2e6;
+  background: #f1f3f5;
+}
+
+.payoff-you .payoff-header,
+.payoff-sender .payoff-header {
+  background: #f1f3f5;
+  color: var(--color-text);
+}
+
+.payoff-body {
+  padding: 14px 16px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.payoff-you .payoff-body,
+.payoff-sender .payoff-body {
+  background: #f8f9fa;
+}
+
+.payoff-highlight {
+  font-weight: 700;
+  font-size: 16px;
+  margin-top: 8px;
+  text-align: center;
 }
 
 /* ---------- Strategy Visual ---------- */
@@ -1079,8 +1173,8 @@ body {
 }
 
 .game-flow .flow-step-content {
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .game-flow .flow-arrow {

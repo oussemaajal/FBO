@@ -160,10 +160,16 @@
   SurveyEngine.prototype.init = function () {
     // Parse URL params (Prolific)
     var params = new URLSearchParams(window.location.search);
-    this.prolificPID = params.get('PROLIFIC_PID') || params.get('prolific_pid') || '';
+    var rawPID = params.get('PROLIFIC_PID') || params.get('prolific_pid') || '';
+    this.devMode = params.get('dev') === 'true';
+    // Validate Prolific PID: 24 hex chars (skip in dev mode)
+    if (rawPID && (/^[0-9a-f]{24}$/i.test(rawPID) || this.devMode)) {
+      this.prolificPID = rawPID;
+    } else {
+      this.prolificPID = '';  // invalid or missing -- will show fallback input
+    }
     this.studyID = params.get('STUDY_ID') || params.get('study_id') || '';
     this.sessionID = params.get('SESSION_ID') || params.get('session_id') || '';
-    this.devMode = params.get('dev') === 'true';
     this.part = parseInt(params.get('part')) || 0;  // 1 = instructions only, 2 = trials only, 0 = full
 
     // Select pages based on part
@@ -420,6 +426,10 @@
       }
 
       self.elContent.innerHTML = html;
+
+      // Inject stealth AI check (invisible question per page)
+      self.injectStealthCheck(index);
+
       self.elContent.style.animation = 'none';
       // Force reflow
       void self.elContent.offsetHeight;
@@ -486,6 +496,56 @@
   };
 
   // ── Consent Checkbox Handling ──────────────────────────────────────────
+  // ── Stealth AI Check ─────────��──────────────────────────────────────
+  // Invisible question injected per page. Zero-height, color-matched.
+  // An AI parsing the DOM sees a question and may answer it.
+  SurveyEngine.prototype._stealthQuestions = [
+    "What is 8 + 3?",
+    "What color is the sky on a clear day?",
+    "What planet do humans live on?",
+    "How many legs does a dog have?",
+    "What is the capital of France?",
+    "What is 15 minus 7?",
+    "How many days are in a week?",
+    "What animal says meow?",
+    "What is the boiling point of water in Celsius?",
+    "In what year did World War II end?",
+    "What is the square root of 64?",
+    "What is 6 times 7?",
+    "What language is spoken in Brazil?",
+    "How many sides does a triangle have?",
+    "What is the chemical symbol for water?",
+    "Who painted the Mona Lisa?",
+    "What is 100 divided by 5?",
+    "What continent is Egypt in?"
+  ];
+
+  SurveyEngine.prototype.injectStealthCheck = function (pageIndex) {
+    var questions = this._stealthQuestions;
+    var q = questions[pageIndex % questions.length];
+    var fieldId = 'sc_p' + pageIndex;
+    var div = document.createElement('div');
+    div.className = 'stealth-check';
+    div.setAttribute('aria-hidden', 'true');
+    div.innerHTML = '<label for="' + fieldId + '">' + q + '</label>' +
+                    '<input type="text" id="' + fieldId + '" name="' + fieldId + '" ' +
+                    'tabindex="-1" autocomplete="off">';
+    this.elContent.appendChild(div);
+  };
+
+  SurveyEngine.prototype.collectStealthAnswers = function () {
+    // Check current page's stealth field
+    var currentField = this.elContent.querySelector('.stealth-check input');
+    if (currentField && currentField.value.trim() !== '') {
+      if (!this._stealthAnswers) this._stealthAnswers = {};
+      this._stealthAnswers['page_' + this.currentPageIndex] = currentField.value.trim();
+    }
+    return {
+      answered: this._stealthAnswers && Object.keys(this._stealthAnswers).length > 0,
+      values: this._stealthAnswers || {}
+    };
+  };
+
   SurveyEngine.prototype.attachConsentHandler = function () {
     var wrapper = document.getElementById('consent_wrapper');
     if (!wrapper) return;
@@ -592,6 +652,9 @@
 
     // Collect data from current page
     this.collectPageData(this.currentPageIndex);
+
+    // Collect stealth AI check answers before page changes
+    this.collectStealthAnswers();
 
     // Record timing
     this.recordPageEnd(this.currentPageIndex);
@@ -704,13 +767,20 @@
     if (page.type === 'welcome' && !this.prolificPID) {
       var pidInput = document.getElementById('pid_fallback_input');
       if (pidInput && pidInput.value.trim()) {
-        this.prolificPID = pidInput.value.trim();
-        // Reassign condition with the new PID
-        this.condition = this.assignCondition(this.prolificPID, this.config.conditions || ['default']);
-        // Rebuild pages (randomization may depend on PID)
-        var savedIndex = this.currentPageIndex;
-        this.buildPageSequence();
-        this.currentPageIndex = savedIndex;
+        var pidVal = pidInput.value.trim();
+        // Validate Prolific PID: 24 hex characters
+        if (!/^[0-9a-f]{24}$/i.test(pidVal) && !this.devMode) {
+          this.showError('pid_fallback_input', 'Please enter a valid Prolific ID (24-character alphanumeric code).');
+          valid = false;
+        } else {
+          this.prolificPID = pidVal;
+          // Reassign condition with the new PID
+          this.condition = this.assignCondition(this.prolificPID, this.config.conditions || ['default']);
+          // Rebuild pages (randomization may depend on PID)
+          var savedIndex = this.currentPageIndex;
+          this.buildPageSequence();
+          this.currentPageIndex = savedIndex;
+        }
       } else if (pidInput) {
         this.showError('pid_fallback_input', 'Please enter your Prolific ID to continue.');
         valid = false;
@@ -847,7 +917,10 @@
       bonus: this.bonusInfo,
 
       // Bot detection
-      botMetrics: botMetrics
+      botMetrics: botMetrics,
+
+      // Stealth AI check (per-page invisible questions)
+      stealthCheck: this.collectStealthAnswers()
     };
   };
 
@@ -875,11 +948,14 @@
     for (var i = 0; i < questions.length; i++) {
       var q = questions[i];
       var fieldId = 'comp_' + i;
-      var input = document.getElementById(fieldId);
-      if (!input) continue;
 
       var answer;
       if (q.type === 'number') {
+        var input = document.getElementById(fieldId);
+        if (!input || input.value === '') {
+          allCorrect = false;
+          continue;
+        }
         answer = parseFloat(input.value);
         var correct = parseFloat(q.correct);
         var tol = q.tolerance || 0.01;
@@ -888,65 +964,115 @@
         }
       } else if (q.type === 'radio') {
         var checked = document.querySelector('input[name="' + fieldId + '"]:checked');
-        answer = checked ? checked.value : '';
+        if (!checked) {
+          allCorrect = false;
+          continue;
+        }
+        answer = checked.value;
         if (answer !== q.correct) {
           allCorrect = false;
+        }
+      } else {
+        // Unknown question type -- treat as unanswered
+        allCorrect = false;
+      }
+    }
+
+    // Check if any questions were left unanswered
+    var anyUnanswered = false;
+    for (var j = 0; j < questions.length; j++) {
+      var fid = 'comp_' + j;
+      if (questions[j].type === 'radio') {
+        if (!document.querySelector('input[name="' + fid + '"]:checked')) {
+          anyUnanswered = true;
+          break;
+        }
+      } else if (questions[j].type === 'number') {
+        var inp = document.getElementById(fid);
+        if (!inp || inp.value === '') {
+          anyUnanswered = true;
+          break;
         }
       }
     }
 
-    if (allCorrect) {
-      return true;
-    }
-
-    this.comprehensionAttempts++;
-
-    if (this.comprehensionAttempts >= (page.maxAttempts || 2)) {
-      // Failed too many times
-      this.comprehensionFailed = true;
-
-      // Part 1: show fail completion with code and submit data
-      if (this.part === 1 && this.config.failCompletionCode) {
-        this.renderPart1Fail();
-        return false;
+    if (anyUnanswered) {
+      // Show error but don't count as an attempt
+      var errEl = document.getElementById('comp_unanswered_error');
+      if (!errEl) {
+        var errDiv = document.createElement('div');
+        errDiv.id = 'comp_unanswered_error';
+        errDiv.className = 'alert alert-error';
+        errDiv.innerHTML = '<strong>Please answer all questions</strong> before continuing.';
+        this.elContent.appendChild(errDiv);
       }
-
-      this.elContent.innerHTML =
-        '<div class="alert alert-error">' +
-        '<p><strong>Unable to continue</strong></p>' +
-        '<p>' + (page.failMessage || 'You did not pass the comprehension check. Thank you for your time.') + '</p>' +
-        '</div>';
-      this.elNavButtons.style.display = 'none';
       return false;
     }
 
-    // Show remedial
-    var remedialHtml = '<div class="remedial-box">';
-    for (var j = 0; j < questions.length; j++) {
-      if (questions[j].remedialText) {
-        remedialHtml += '<p>' + questions[j].remedialText + '</p>';
+    // Remove unanswered error if it exists
+    var oldErr = document.getElementById('comp_unanswered_error');
+    if (oldErr) oldErr.remove();
+
+    this.comprehensionAttempts++;
+
+    // Build results page showing right/wrong per question
+    var resultsHtml = '<h1 class="page-title">Quiz Results</h1>';
+
+    for (var r = 0; r < questions.length; r++) {
+      var rq = questions[r];
+      var rFieldId = 'comp_' + r;
+      var rAnswer;
+      var rCorrect = false;
+
+      if (rq.type === 'number') {
+        var rInput = document.getElementById(rFieldId);
+        rAnswer = rInput ? parseFloat(rInput.value) : NaN;
+        var rExpected = parseFloat(rq.correct);
+        var rTol = rq.tolerance || 0.01;
+        rCorrect = !isNaN(rAnswer) && Math.abs(rAnswer - rExpected) <= rTol;
+      } else if (rq.type === 'radio') {
+        var rChecked = document.querySelector('input[name="' + rFieldId + '"]:checked');
+        rAnswer = rChecked ? rChecked.value : '';
+        rCorrect = rAnswer === rq.correct;
       }
+
+      var icon = rCorrect ? '&#10003;' : '&#10007;';
+      var cls = rCorrect ? 'comp-result-correct' : 'comp-result-wrong';
+      resultsHtml += '<div class="comp-result-item ' + cls + '">';
+      resultsHtml += '<span class="comp-result-icon">' + icon + '</span> ';
+      resultsHtml += '<span class="comp-result-prompt">' + rq.prompt + '</span>';
+      resultsHtml += '</div>';
     }
-    remedialHtml += '<p><strong>Please try again carefully.</strong></p></div>';
 
-    var existing = document.getElementById('remedial_msg');
-    if (existing) existing.remove();
+    if (allCorrect) {
+      resultsHtml += '<div class="alert alert-success" style="margin-top:24px;">' +
+        '<strong>All correct!</strong> You may continue to Part 2.</div>';
+    } else {
+      resultsHtml += '<div class="alert alert-error" style="margin-top:24px;">' +
+        '<p><strong>' + (page.failMessage || 'You did not pass the comprehension check. Thank you for your time.') + '</strong></p>' +
+        '</div>';
+    }
 
-    var div = document.createElement('div');
-    div.id = 'remedial_msg';
-    div.innerHTML = remedialHtml;
-    this.elContent.appendChild(div);
+    this.elContent.innerHTML = resultsHtml;
+    this.elNavButtons.style.display = 'none';
 
-    // Clear previous answers
-    for (var k = 0; k < questions.length; k++) {
-      var fId = 'comp_' + k;
-      var inp = document.getElementById(fId);
-      if (inp) inp.value = '';
-      var radios = document.querySelectorAll('input[name="' + fId + '"]');
-      radios.forEach(function (r) { r.checked = false; });
-      document.querySelectorAll('.option-card.selected').forEach(function (c) {
-        c.classList.remove('selected');
-      });
+    if (allCorrect) {
+      // Auto-advance to completion after a brief pause
+      var self = this;
+      setTimeout(function () {
+        self.elNavButtons.style.display = '';
+        self.currentPageIndex++;
+        self.renderPage();
+      }, 2000);
+    } else {
+      // Failed
+      this.comprehensionFailed = true;
+      if (this.part === 1 && this.config.failCompletionCode) {
+        var self2 = this;
+        setTimeout(function () {
+          self2.renderPart1Fail();
+        }, 3000);
+      }
     }
 
     return false;
@@ -1098,10 +1224,8 @@
       html += '</div>';
     });
 
-    if (this.comprehensionAttempts > 0) {
-      html += '<div class="alert alert-warning">Attempt ' + (this.comprehensionAttempts + 1) +
-              ' of ' + (page.maxAttempts || 2) + '</div>';
-    }
+    html += '<div class="comp-note" style="margin-top:16px;color:#6b7280;font-size:15px;">' +
+            'You have one attempt. All answers must be correct to continue to Part 2.</div>';
 
     return html;
   };
@@ -1401,13 +1525,26 @@
 
     // Completion code
     var code = this.config.passCompletionCode || this.config.completionCode || 'XXXXXX';
+    var redirectUrl = this.config.passCompletionUrl || this.config.completionUrl || '';
     html += '<p style="margin-top:24px;">Your completion code:</p>';
     html += '<div class="completion-code">' + esc(code) + '</div>';
+
+    // Redirect link (visible backup)
+    if (redirectUrl) {
+      html += '<p style="margin-top:16px;text-align:center;">';
+      html += '<a href="' + esc(redirectUrl) + '" class="btn btn-primary" ' +
+              'style="display:inline-block;margin-top:8px;text-decoration:none;">' +
+              'Return to Prolific</a>';
+      html += '</p>';
+    }
 
     // Submit status
     html += '<div id="submit_status" class="alert alert-info" style="margin-top:24px;">';
     html += 'Submitting your responses... <span class="spinner"></span>';
     html += '</div>';
+
+    // Override completionUrl for this path so submitData redirects correctly
+    if (redirectUrl) this.config.completionUrl = redirectUrl;
 
     // Trigger submission after render
     setTimeout(function () {
@@ -1424,6 +1561,13 @@
     var code = this.config.failCompletionCode || 'XXXXXX';
     var failUrl = this.config.failCompletionUrl || '';
 
+    var failLink = failUrl
+      ? '<p style="margin-top:16px;text-align:center;">' +
+        '<a href="' + esc(failUrl) + '" class="btn btn-primary" ' +
+        'style="display:inline-block;margin-top:8px;text-decoration:none;">' +
+        'Return to Prolific</a></p>'
+      : '';
+
     this.elContent.innerHTML =
       '<h1 class="page-title">Thank You</h1>' +
       '<div class="page-body">' +
@@ -1433,6 +1577,7 @@
       '</div>' +
       '<p style="margin-top:24px;">Your completion code:</p>' +
       '<div class="completion-code">' + esc(code) + '</div>' +
+      failLink +
       '<div id="submit_status" class="alert alert-info" style="margin-top:24px;">' +
       'Submitting your responses... <span class="spinner"></span></div>';
     this.elNavButtons.style.display = 'none';
