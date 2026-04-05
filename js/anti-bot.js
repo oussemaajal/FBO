@@ -18,6 +18,8 @@
     invisibleInstructionTriggered: false,
     aiVerifyValue: '',
 
+    // Per-page stealth questions are tracked by engine.js (collectStealthAnswers)
+
     // Mouse
     mouseMovements: 0,
     mouseClicks: 0,
@@ -139,6 +141,8 @@
       metrics.invisibleInstructionTriggered = true;
       metrics.aiVerifyValue = aiVerify.value.trim();
     }
+
+    // Per-page stealth questions are checked by engine.js collectStealthAnswers()
   }
 
   function computeFlags() {
@@ -159,6 +163,8 @@
     if (metrics.invisibleInstructionTriggered) {
       flags.push('ai_instruction_triggered');
     }
+
+    // Per-page stealth flags are in engine.js stealthCheck data
 
     // Flag: no mouse movement at all (likely headless browser)
     if (metrics.mouseMovements === 0 && durationMin > 1) {

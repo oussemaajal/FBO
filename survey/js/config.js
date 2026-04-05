@@ -85,19 +85,21 @@ var SURVEY_CONFIG = {
 
   // ── Part 1 Pages (instructions + quiz, ~5 min, $1) ─────────────────
   // Accessed via ?part=1. Visual instructions, comprehension quiz, completion.
+  // minTimeSeconds formula: round(6 + 0.18*words + 0.0018*words^2)
   part1Pages: [
 
-    // ── WELCOME ──
+    // ── WELCOME ── (~70 words -> 23s)
     {
       id: "p1_welcome",
       type: "welcome",
       title: "Welcome!",
       subtitle: "Part 1: Learning the Game",
       body: "<p>In this short task (<strong>~5 minutes</strong>), we will teach you " +
-            "a simple guessing game.</p>" +
-            "<p>At the end, there is a short quiz. If you pass, you will be " +
-            "invited to <strong>Part 2</strong>, where you play the game for a " +
-            "<strong>bonus of up to $2.00</strong>.</p>" +
+            "a simple guessing game and ask you a short quiz.</p>" +
+            "<p>If you pass the quiz, you will be invited to <strong>Part 2</strong> " +
+            "(a separate Prolific study, ~10 minutes) where you play the game " +
+            "for <strong>$2.00 base pay</strong> plus an <strong>accuracy bonus " +
+            "of up to $2.00</strong>.</p>" +
             "<p>You will be paid <strong>$1.00</strong> for completing this part, " +
             "regardless of your quiz result.</p>",
       buttonText: "Let's Go"
@@ -114,7 +116,8 @@ var SURVEY_CONFIG = {
             "and answer a short quiz.</p>" +
             "<p><strong>Time:</strong> Approximately 5 minutes.</p>" +
             "<p><strong>Compensation:</strong> $1.00 for this part. If you pass the quiz, " +
-            "you will be invited to Part 2 (~12 minutes, $2.50 + up to $2.00 bonus).</p>" +
+            "you will be invited to Part 2 (a separate Prolific study, ~10 minutes, " +
+            "$2.00 base + up to $2.00 accuracy bonus).</p>" +
             "<p><strong>Risks:</strong> No known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
             "We collect your Prolific ID only to process payment.</p>" +
@@ -122,10 +125,10 @@ var SURVEY_CONFIG = {
             "this window.</p>",
       mustAgree: true,
       declineMessage: "You must agree to participate in order to continue.",
-      minTimeSeconds: 15
+      minTimeSeconds: 27
     },
 
-    // ── INSTRUCTION 1: Meet the Players ──
+    // ── INSTRUCTION 1: Meet the Players ── (~40 words -> 16s)
     {
       id: "p1_inst1",
       type: "instructions",
@@ -158,23 +161,18 @@ var SURVEY_CONFIG = {
         "<strong>the Sender</strong>.</p>" +
         "<p>The Sender is a <strong>real person</strong> who already played " +
         "their part. You are seeing the results of their choices.</p>",
-      minTimeSeconds: 10
+      minTimeSeconds: 11
     },
 
     // ── INSTRUCTION 2: The Sender Gets Numbers ──
     {
       id: "p1_inst2",
       type: "instructions",
-      title: "Step 1: The Sender Gets Numbers",
+      title: "The Sender Gets Numbers",
       body:
-        "<div class='flow-step-visual'>" +
-          "<div class='flow-step-icon'>&#127922;</div>" +
-          "<div class='flow-step-text'>A random number generator gives the Sender " +
-          "a set of secret numbers.</div>" +
-        "</div>" +
+        "<p>A random number generator gives the Sender a set of <strong>secret numbers</strong>.</p>" +
         "<p>Each number is between <strong>1 and 10</strong>.</p>" +
-        "<p>The amount of numbers changes each round -- sometimes 4, sometimes 6, " +
-        "sometimes 8.</p>" +
+        "<p>The amount of numbers changes each round -- sometimes 4, sometimes 6, sometimes 8.</p>" +
         "<div class='example-box'>" +
           "<div class='example-label'>Example</div>" +
           "<p>The Sender gets <strong>4 numbers</strong>:</p>" +
@@ -192,7 +190,7 @@ var SURVEY_CONFIG = {
     {
       id: "p1_inst3",
       type: "instructions",
-      title: "Step 2: The Sender Picks What to Show",
+      title: "The Sender Picks What to Show",
       body:
         "<p>The Sender looks at all their numbers and <strong>decides which ones " +
         "to show you</strong>.</p>" +
@@ -203,21 +201,21 @@ var SURVEY_CONFIG = {
           "<p>The Sender has 3, 5, 7, 9 and decides to show you <strong>only the " +
           "7 and 9</strong>:</p>" +
           "<div class='sender-number-cards'>" +
-            "<div class='sender-number-card card-hidden'>?</div>" +
-            "<div class='sender-number-card card-hidden'>?</div>" +
+            "<div class='sender-number-card card-hidden'>3</div>" +
+            "<div class='sender-number-card card-hidden'>5</div>" +
             "<div class='sender-number-card card-shown'>7</div>" +
             "<div class='sender-number-card card-shown'>9</div>" +
           "</div>" +
           "<p class='example-note'>The 3 and 5 are hidden from you.</p>" +
         "</div>",
-      minTimeSeconds: 12
+      minTimeSeconds: 17
     },
 
-    // ── INSTRUCTION 4: You Guess ──
+    // ── INSTRUCTION 4: You Guess the Average ──
     {
       id: "p1_inst4",
       type: "instructions",
-      title: "Step 3: You Guess the Average",
+      title: "You Guess the Average",
       body:
         "<p>Your job is to guess the <strong>average of ALL the Sender's numbers</strong> " +
         "-- including any they chose not to show you.</p>" +
@@ -226,100 +224,111 @@ var SURVEY_CONFIG = {
           "<p>You see <strong>7</strong> and <strong>9</strong>. But the Sender " +
           "actually has <strong>3, 5, 7, 9</strong>.</p>" +
           "<p>The true average is (3 + 5 + 7 + 9) / 4 = <strong>6.00</strong></p>" +
-          "<p>If you only averaged what you saw (7 and 9), you would get 8.00 " +
-          "-- too high!</p>" +
+          "<p>If you only averaged what you saw (7 and 9), you would get 8.00 -- too high!</p>" +
         "</div>",
-      minTimeSeconds: 12
+      minTimeSeconds: 19
     },
 
-    // ── INSTRUCTION 5: The Catch ──
+    // ── INSTRUCTION 5: How the Sender is Paid ──
     {
       id: "p1_inst5",
       type: "instructions",
-      title: "Why Does This Matter?",
+      title: "How the Sender is Paid",
       body:
-        "<div class='callout-box callout-warning'>" +
-          "<p><strong>The Sender gets paid more when your guess is higher.</strong></p>" +
-        "</div>" +
-        "<p>So the Sender has a reason to try to make you <strong>overestimate</strong> " +
-        "the true average.</p>" +
-        "<p>Think about it: if the Sender has high numbers and low numbers, " +
-        "and they want you to think the average is high...</p>" +
-        "<p><strong>Which numbers would they show you?</strong></p>",
-      minTimeSeconds: 10
+        "<p>The Sender earns more money when <strong>your guess is higher</strong>.</p>" +
+        "<p>It does not matter what the true average is -- only your guess matters " +
+        "for the Sender's payment.</p>" +
+        "<p>The Sender sees all their numbers before deciding which ones to show you. " +
+        "Keep this in mind.</p>",
+      minTimeSeconds: 12
     },
 
-    // ── INSTRUCTION 6: The Strategy ──
+    // ── INSTRUCTION 6: How You are Paid ──
     {
       id: "p1_inst6",
       type: "instructions",
-      title: "The Sender's Strategy",
+      title: "How Your Bonus Works",
       body:
-        "<p>Since the Sender wants you to guess <strong>high</strong>, they have " +
-        "a reason to:</p>" +
-        "<div class='strategy-visual'>" +
-          "<div class='strategy-item strategy-show'>" +
-            "<div class='strategy-icon'>&#128065;</div>" +
-            "<div class='strategy-text'>Show you their <strong>high</strong> numbers</div>" +
-          "</div>" +
-          "<div class='strategy-item strategy-hide'>" +
-            "<div class='strategy-icon'>&#128683;</div>" +
-            "<div class='strategy-text'>Hide their <strong>low</strong> numbers</div>" +
-          "</div>" +
-        "</div>" +
-        "<p>This means the numbers you <em>don't</em> see are likely to be " +
-        "<strong>lower than the ones you do see</strong>.</p>",
-      minTimeSeconds: 10
+        "<p>You earn more when your guess is <strong>close to the true average</strong>.</p>" +
+        "<p><strong>Bonus = $2.00 &minus; $0.40 &times; |your error|</strong></p>" +
+        "<p>In Part 2, you play <strong>18 rounds</strong>. At the end, " +
+        "one round is randomly selected for your bonus.</p>" +
+        "<div class='example-box'>" +
+          "<div class='example-label'>Example</div>" +
+          "<p>Suppose the true average is <strong>5.00</strong>:</p>" +
+          "<ul>" +
+            "<li>You guess <strong>5.0</strong> &rarr; error = 0 &rarr; bonus = <strong>$2.00</strong></li>" +
+            "<li>You guess <strong>6.0</strong> &rarr; error = 1 &rarr; bonus = <strong>$1.60</strong></li>" +
+            "<li>You guess <strong>8.0</strong> &rarr; error = 3 &rarr; bonus = <strong>$0.80</strong></li>" +
+            "<li>You guess <strong>10.0</strong> &rarr; error = 5 &rarr; bonus = <strong>$0.00</strong></li>" +
+          "</ul>" +
+        "</div>",
+      minTimeSeconds: 25
     },
 
-    // ── INSTRUCTION 7: Your Bonus ──
+    // ── INSTRUCTION 7: A Complete Example ──
     {
       id: "p1_inst7",
       type: "instructions",
-      title: "Your Bonus",
+      title: "Putting It All Together",
       body:
-        "<p>In Part 2, you will play <strong>18 rounds</strong> of this game.</p>" +
-        "<p>At the end, one round is randomly selected. Your <strong>bonus " +
-        "(up to $2.00)</strong> depends on how close your guess was to the " +
-        "true average in that round.</p>" +
-        "<div class='callout-box callout-info'>" +
-          "<p><strong>The more accurate you are, the more you earn.</strong></p>" +
-          "<p>Think carefully about what the Sender chose to show -- " +
-          "and what they might be hiding.</p>" +
+        "<p>Let's walk through a complete round.</p>" +
+        "<p><strong>Step 1:</strong> The Sender gets <strong>4 numbers</strong>:</p>" +
+        "<div class='sender-number-cards'>" +
+          "<div class='sender-number-card'>3</div>" +
+          "<div class='sender-number-card'>5</div>" +
+          "<div class='sender-number-card'>7</div>" +
+          "<div class='sender-number-card'>9</div>" +
+        "</div>" +
+        "<p><strong>Step 2:</strong> The Sender decides to show you <strong>only the 7 and 9</strong>:</p>" +
+        "<div class='sender-number-cards'>" +
+          "<div class='sender-number-card card-hidden'>3</div>" +
+          "<div class='sender-number-card card-hidden'>5</div>" +
+          "<div class='sender-number-card card-shown'>7</div>" +
+          "<div class='sender-number-card card-shown'>9</div>" +
+        "</div>" +
+        "<p><strong>Step 3:</strong> You guess the average of ALL 4 numbers.</p>" +
+        "<div class='example-box'>" +
+          "<p>True average: (3 + 5 + 7 + 9) / 4 = <strong>6.00</strong></p>" +
+          "<p>If you guessed <strong>6.0</strong>, your error is 0 &rarr; bonus = <strong>$2.00</strong></p>" +
+          "<p>If you guessed <strong>8.0</strong> (averaging only what you saw), " +
+          "your error is 2 &rarr; bonus = <strong>$1.20</strong></p>" +
         "</div>",
-      minTimeSeconds: 8
+      minTimeSeconds: 24
     },
 
-    // ── INSTRUCTION 8: Summary Flow ──
+    // ── INSTRUCTION 8: Summary ──
     {
       id: "p1_inst8",
       type: "instructions",
-      title: "Putting It All Together",
+      title: "Summary",
       body:
         "<div class='game-flow'>" +
           "<div class='flow-step'>" +
             "<div class='flow-step-number'>1</div>" +
             "<div class='flow-step-content'>" +
-              "<strong>Random numbers</strong><br>The Sender gets secret numbers (each 1-10)" +
+              "<strong>Sender gets numbers</strong><br>Random numbers, each 1-10" +
             "</div>" +
           "</div>" +
           "<div class='flow-arrow'>&#9660;</div>" +
           "<div class='flow-step'>" +
             "<div class='flow-step-number'>2</div>" +
             "<div class='flow-step-content'>" +
-              "<strong>Sender picks</strong><br>They choose which numbers to show you" +
+              "<strong>Sender picks what to show</strong><br>They choose which numbers you see" +
             "</div>" +
           "</div>" +
           "<div class='flow-arrow'>&#9660;</div>" +
           "<div class='flow-step'>" +
             "<div class='flow-step-number'>3</div>" +
             "<div class='flow-step-content'>" +
-              "<strong>You guess</strong><br>Estimate the average of ALL numbers (shown + hidden)" +
+              "<strong>You guess the average</strong><br>Of ALL numbers (shown + hidden)" +
             "</div>" +
           "</div>" +
         "</div>" +
+        "<p style='margin-top:16px;'><strong>You</strong> are paid for accuracy. " +
+        "<strong>The Sender</strong> is paid when your guess is higher.</p>" +
         "<p style='text-align:center; margin-top:16px;'>Now let's check that you've got it!</p>",
-      minTimeSeconds: 10
+      minTimeSeconds: 14
     },
 
     // ── COMPREHENSION QUIZ ──
@@ -327,64 +336,69 @@ var SURVEY_CONFIG = {
       id: "p1_comprehension",
       type: "comprehension",
       title: "Quick Quiz",
-      description: "<p>Answer these questions to show you understand the game. " +
-                   "You get <strong>two attempts</strong>.</p>",
+      description: "<p>Answer these questions to show you understand the game.</p>",
       questions: [
         {
-          prompt: "Can the Sender choose which of their numbers to show you?",
+          prompt: "Who decides which numbers you see?",
           type: "radio",
-          correct: "yes",
+          correct: "sender_choice",
           options: [
-            { value: "yes", label: "Yes -- they decide which numbers to reveal and which to hide" },
-            { value: "no", label: "No -- they must show all of them" },
-            { value: "random", label: "No -- the numbers shown are chosen randomly" }
+            { value: "computer", label: "The computer randomly selects which numbers are shown" },
+            { value: "sender_choice", label: "The Sender looks at all numbers and chooses which to reveal" },
+            { value: "you_pick", label: "I choose which numbers to reveal" },
+            { value: "all_shown", label: "All numbers are always shown" }
           ],
-          remedialText: "The Sender gets to look at all their numbers and freely decide " +
-                        "which ones to show you. They are not required to show any particular number."
         },
         {
-          prompt: "The Sender earns more money when...",
+          prompt: "How is the <strong>Sender</strong> paid?",
           type: "radio",
-          correct: "high",
+          correct: "higher_guess",
           options: [
-            { value: "accurate", label: "You guess the average accurately" },
-            { value: "high", label: "You guess higher than the true average" },
-            { value: "low", label: "You guess lower than the true average" }
+            { value: "accuracy", label: "The Sender earns more when my guess is close to the true average" },
+            { value: "higher_guess", label: "The Sender earns more when my guess is higher" },
+            { value: "flat", label: "The Sender gets a flat payment regardless of my guess" },
+            { value: "lower_guess", label: "The Sender earns more when my guess is lower" }
           ],
-          remedialText: "The Sender earns more when your guess is HIGH. This means the " +
-                        "Sender has a reason to make you overestimate the true average."
         },
         {
-          prompt: "What are you trying to guess?",
+          prompt: "What are you guessing?",
           type: "radio",
-          correct: "all",
+          correct: "all_avg",
           options: [
-            { value: "shown", label: "The average of only the numbers the Sender showed me" },
-            { value: "all", label: "The average of ALL the Sender's numbers (including hidden ones)" },
-            { value: "hidden", label: "The value of the hidden numbers" }
+            { value: "shown_avg", label: "The average of only the numbers the Sender showed me" },
+            { value: "all_avg", label: "The average of ALL the Sender's numbers (shown and hidden)" },
+            { value: "hidden_only", label: "The total of the hidden numbers" },
+            { value: "highest", label: "The highest number the Sender has" }
           ],
-          remedialText: "You are guessing the average of ALL the Sender's numbers -- " +
-                        "both the ones they showed you and the ones they kept hidden."
         },
         {
-          prompt: "The Sender has 4 numbers: <strong>3, 5, 7, 9</strong>. " +
-                  "They show you only the <strong>7</strong> and <strong>9</strong>. " +
-                  "What is the true average of ALL their numbers?",
+          prompt: "The Sender has <strong>6 numbers</strong>: 7, 2, 9, 1, 3, 8. " +
+                  "They show you <strong>9</strong> and <strong>8</strong>. " +
+                  "What is the true average of ALL 6 numbers?",
           type: "radio",
-          correct: "6.00",
+          correct: "5.00",
           options: [
-            { value: "8.00", label: "8.00" },
+            { value: "8.50", label: "8.50" },
+            { value: "5.00", label: "5.00" },
             { value: "6.00", label: "6.00" },
-            { value: "7.00", label: "7.00" },
-            { value: "5.00", label: "5.00" }
+            { value: "7.00", label: "7.00" }
           ],
-          remedialText: "The Sender has four numbers: 3, 5, 7, 9. The average of ALL of them " +
-                        "is (3 + 5 + 7 + 9) / 4 = 6.00. The Sender only showed you the " +
-                        "7 and 9 (the high ones) to make you think the average is higher."
+        },
+        {
+          prompt: "The true average of the Sender's numbers is 4.00. " +
+                  "You guess 7.00. Who benefits from this guess?",
+          type: "radio",
+          correct: "sender_benefits",
+          options: [
+            { value: "you_benefit", label: "I benefit -- my guess earns me a larger bonus" },
+            { value: "sender_benefits", label: "The Sender benefits -- they earn more from a higher guess" },
+            { value: "both_benefit", label: "Both of us benefit equally" },
+            { value: "neither", label: "Neither -- the guess has no effect on payment" }
+          ],
         }
       ],
-      minTimeSeconds: 20,
-      maxAttempts: 2,
+      minTimeSeconds: 25,
+      maxAttempts: 1,
       failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
                    "We are unable to include you in Part 2. Thank you for your time -- you will " +
                    "still be paid $1.00 for completing this part."
@@ -396,11 +410,11 @@ var SURVEY_CONFIG = {
       type: "completion",
       title: "You Passed!",
       body: "<p>Great job -- you understand the game!</p>" +
-            "<p>You will now be redirected to <strong>Part 2</strong>, where you " +
-            "will play 18 rounds and earn your bonus.</p>" +
+            "<p><strong>Part 2</strong> is a separate Prolific study (~10 minutes, " +
+            "$2.00 base + up to $2.00 accuracy bonus). It should appear in your " +
+            "Prolific dashboard within a few minutes.</p>" +
             "<p>Please <strong>submit your completion code on Prolific</strong>, then " +
-            "look for the Part 2 study in your dashboard. It should appear within " +
-            "a few minutes.</p>"
+            "look for the Part 2 study.</p>"
     }
   ],
 
@@ -931,8 +945,6 @@ var SURVEY_CONFIG = {
             { value: "no", label: "No -- they must show all of them" },
             { value: "random", label: "No -- the numbers shown are chosen randomly" }
           ],
-          remedialText: "The Sender gets to look at all their numbers and freely decide " +
-                        "which ones to show you. They are not required to show any particular number."
         },
         {
           prompt: "The Sender earns more money when...",
@@ -943,8 +955,6 @@ var SURVEY_CONFIG = {
             { value: "high", label: "You guess higher than the true average" },
             { value: "low", label: "You guess lower than the true average" }
           ],
-          remedialText: "The Sender earns more when your guess is HIGH. This means the " +
-                        "Sender has a reason to make you overestimate the true average."
         },
         {
           prompt: "What are you trying to guess?",
@@ -955,8 +965,6 @@ var SURVEY_CONFIG = {
             { value: "all", label: "The average of ALL the Sender's numbers (including hidden ones)" },
             { value: "hidden", label: "The value of the hidden numbers" }
           ],
-          remedialText: "You are guessing the average of ALL the Sender's numbers -- " +
-                        "both the ones they showed you and the ones they kept hidden."
         },
         {
           prompt: "The Sender has 2 numbers: <strong>4</strong> and <strong>6</strong>. " +
@@ -970,14 +978,10 @@ var SURVEY_CONFIG = {
             { value: "4.00", label: "4.00" },
             { value: "5.50", label: "5.50" }
           ],
-          remedialText: "The Sender has two numbers: 4 and 6. The average of ALL their " +
-                        "numbers is (4 + 6) / 2 = 5.00. Notice: the Sender showed you only " +
-                        "the 6 (the higher number) to make you think the average is higher " +
-                        "than it really is."
         }
       ],
       minTimeSeconds: 30,
-      maxAttempts: 2,
+      maxAttempts: 1,
       failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
                    "We are unable to include your responses in the study. Thank you for your time."
     },
