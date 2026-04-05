@@ -127,67 +127,195 @@ var SURVEY_CONFIG = {
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // INSTRUCTIONS 1a: The Guessing Game (intro)
+    // INSTRUCTIONS 1: The Guessing Game (intro)
     // ──────────────────────────────────────────────────────────────────
     {
-      id: "instructions_1a",
+      id: "instructions_1",
       type: "instructions",
       title: "The Guessing Game",
       body:
-        "<p>In this study, you are playing a guessing game against another player " +
-        "called the <strong>Sender</strong>.</p>" +
+        "<p>In this study, you will play a guessing game with <strong>another " +
+        "player</strong>.</p>" +
 
-        "<p>The Senders are <strong>real human participants</strong> who already played " +
-        "their part in an earlier session. Their choices have been recorded, and you " +
-        "are now seeing the results of their decisions.</p>",
-      minTimeSeconds: 15
+        "<p>This other player is a <strong>real person</strong> who already played " +
+        "their part in an earlier session. Their choices have been recorded, and " +
+        "you are now seeing the results of what they decided to do.</p>" +
+
+        "<p>During the game, we will call this other player <strong>\"the Sender\"</strong> " +
+        "(because they send information to you).</p>",
+      minTimeSeconds: 12
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // INSTRUCTIONS 1b: How the Game Works (3 steps + visual)
+    // INSTRUCTIONS 2: The Sender's Secret Numbers
     // ──────────────────────────────────────────────────────────────────
     {
-      id: "instructions_1b",
+      id: "instructions_2",
       type: "instructions",
-      title: "How the Game Works",
+      title: "The Sender's Secret Numbers",
       body:
-        "<p><strong>Step 1:</strong> A random number generator gives the Sender a set of " +
-        "secret numbers. Each number is between <strong>1 and 10</strong>. The set size " +
-        "varies across rounds (sometimes 2 numbers, sometimes 4, 6, or 8).</p>" +
+        "<p>At the start of each round, a <strong>random number generator</strong> " +
+        "gives the Sender a set of secret numbers. Each number is somewhere " +
+        "between <strong>1 and 10</strong>.</p>" +
+
+        "<p>The number of secret numbers <strong>changes each round</strong>. " +
+        "Sometimes the Sender gets 4 numbers, sometimes 6, sometimes 8.</p>" +
 
         "<div class='sender-visual'>" +
-          "<div class='sender-visual-label'>Example: The Sender receives 2 secret numbers</div>" +
+          "<div class='sender-visual-label'>Example: The Sender gets 2 secret numbers</div>" +
           "<div class='sender-number-cards'>" +
             "<div class='sender-number-card'>4</div>" +
             "<div class='sender-number-card'>6</div>" +
           "</div>" +
         "</div>" +
 
-        "<p><strong>Step 2:</strong> The Sender looks at their numbers and decides which " +
-        "ones to <strong>reveal to you</strong>. They can choose to show you all of them, " +
-        "only some of them, or none at all -- it is entirely up to them.</p>" +
-
-        "<p><strong>Step 3:</strong> You see what the Sender chose to reveal, and your job " +
-        "is to <strong>guess the average of ALL the numbers</strong> the Sender received " +
-        "-- including any they chose not to show you.</p>",
-      minTimeSeconds: 20
+        "<p>You will always be told <strong>how many</strong> secret numbers the " +
+        "Sender received in each round.</p>",
+      minTimeSeconds: 15
     },
 
     // ──────────────────────────────────────────────────────────────────
-    // INSTRUCTIONS 1c: The Sender's Goal (incentives)
+    // INSTRUCTIONS 3: The Sender Chooses What to Show
     // ──────────────────────────────────────────────────────────────────
     {
-      id: "instructions_1c",
+      id: "instructions_3",
       type: "instructions",
-      title: "The Sender's Goal",
+      title: "The Sender Chooses What to Show You",
       body:
-        "<p>The Sender gets paid based on <strong>your guess</strong>. The higher you guess, " +
-        "the more the Sender earns. So the Sender has an incentive to make you " +
-        "<strong>overestimate</strong> the true average.</p>" +
+        "<p>After seeing their numbers, the Sender <strong>decides which ones " +
+        "to reveal to you</strong>. This is entirely their choice.</p>" +
 
-        "<p>Think about what this means: if the Sender has some high numbers and some low " +
-        "numbers, what would they choose to show you?</p>",
+        "<p>They can show you:</p>" +
+        "<ul>" +
+          "<li><strong>All</strong> of their numbers</li>" +
+          "<li>Only <strong>some</strong> of them</li>" +
+          "<li>Or even <strong>none</strong> at all</li>" +
+        "</ul>" +
+
+        "<p>Using the example above: if the Sender has <strong>4</strong> and " +
+        "<strong>6</strong>, they might choose to show you both, just one of " +
+        "them, or neither. It is completely up to them.</p>",
+      minTimeSeconds: 12
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // INSTRUCTIONS 4: The Catch (incentives)
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "instructions_4",
+      type: "instructions",
+      title: "The Catch",
+      body:
+        "<p>Here is the important part:</p>" +
+
+        "<p>The Sender gets paid based on <strong>your guess</strong>. " +
+        "The <strong>higher</strong> you guess, the <strong>more money</strong> " +
+        "the Sender earns.</p>" +
+
+        "<p>This means the Sender has a reason to try to make you " +
+        "<strong>overestimate</strong> the true average of their numbers.</p>" +
+
+        "<p style='padding:16px; background:#fff8e6; border-radius:8px; " +
+        "border-left:4px solid var(--color-warning);'>" +
+        "Think about it: if the Sender has some high numbers and some low " +
+        "numbers, and they want you to think the average is high, which " +
+        "numbers would they choose to show you?</p>",
       minTimeSeconds: 15
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // INSTRUCTIONS 5: Your Task
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "instructions_5",
+      type: "instructions",
+      title: "Your Task",
+      body:
+        "<p>In each round, you will see what the Sender chose to reveal. " +
+        "Your job is to <strong>guess the average of ALL the Sender's " +
+        "numbers</strong> -- including any they chose not to show you.</p>" +
+
+        "<p>Your bonus depends on <strong>how accurate</strong> your guess is. " +
+        "At the end of the study, one round will be randomly selected, and " +
+        "your bonus (up to <strong>$2.00</strong>) depends on how close your " +
+        "guess was to the true average in that round.</p>" +
+
+        "<p style='padding:16px; background:#f0f4ff; border-radius:8px; " +
+        "border-left:4px solid var(--color-primary);'>" +
+        "<strong>To summarize:</strong> The Sender wants you to guess high. " +
+        "You want to guess accurately. Think carefully about why the Sender " +
+        "chose to show you certain numbers and not others.</p>",
+      minTimeSeconds: 15
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // COMPREHENSION QUIZ
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "comprehension",
+      type: "comprehension",
+      title: "Quick Quiz",
+      description: "<p>Let's make sure you understand how the game works " +
+                   "before we start.</p>",
+      questions: [
+        {
+          prompt: "Can the Sender choose which of their numbers to show you?",
+          type: "radio",
+          correct: "yes",
+          options: [
+            { value: "yes", label: "Yes -- they decide which numbers to reveal and which to hide" },
+            { value: "no", label: "No -- they must show all of them" },
+            { value: "random", label: "No -- the numbers shown are chosen randomly" }
+          ],
+          remedialText: "The Sender gets to look at all their numbers and freely decide " +
+                        "which ones to show you. They are not required to show any particular number."
+        },
+        {
+          prompt: "The Sender earns more money when...",
+          type: "radio",
+          correct: "high",
+          options: [
+            { value: "accurate", label: "You guess the average accurately" },
+            { value: "high", label: "You guess higher than the true average" },
+            { value: "low", label: "You guess lower than the true average" }
+          ],
+          remedialText: "The Sender earns more when your guess is HIGH. This means the " +
+                        "Sender has a reason to make you overestimate the true average."
+        },
+        {
+          prompt: "What are you trying to guess?",
+          type: "radio",
+          correct: "all",
+          options: [
+            { value: "shown", label: "The average of only the numbers the Sender showed me" },
+            { value: "all", label: "The average of ALL the Sender's numbers (including hidden ones)" },
+            { value: "hidden", label: "The value of the hidden numbers" }
+          ],
+          remedialText: "You are guessing the average of ALL the Sender's numbers -- " +
+                        "both the ones they showed you and the ones they kept hidden."
+        },
+        {
+          prompt: "The Sender has 2 numbers: <strong>4</strong> and <strong>6</strong>. " +
+                  "They show you only the <strong>6</strong>. What is the true average " +
+                  "of ALL their numbers?",
+          type: "radio",
+          correct: "5.00",
+          options: [
+            { value: "6.00", label: "6.00" },
+            { value: "5.00", label: "5.00" },
+            { value: "4.00", label: "4.00" },
+            { value: "5.50", label: "5.50" }
+          ],
+          remedialText: "The Sender has two numbers: 4 and 6. The average of ALL their " +
+                        "numbers is (4 + 6) / 2 = 5.00. Notice: the Sender showed you only " +
+                        "the 6 (the higher number) to make you think the average is higher " +
+                        "than it really is."
+        }
+      ],
+      minTimeSeconds: 30,
+      maxAttempts: 2,
+      failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
+                   "We are unable to include your responses in the study. Thank you for your time."
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -248,63 +376,16 @@ var SURVEY_CONFIG = {
     {
       id: "instructions_bonus",
       type: "instructions",
-      title: "Your Bonus",
+      title: "Almost Ready!",
       body:
-        "<p>At the end of the study, one round will be randomly selected. " +
-        "Your bonus depends on <strong>how close your guess was to the true " +
-        "average</strong> in that round. The closer you are, the more you earn " +
-        "(up to $2.00).</p>" +
+        "<p>One last thing before we start.</p>" +
 
-        "<p style='padding:16px; background:#f0f4ff; border-radius:8px; " +
-        "border-left:4px solid var(--color-primary);'>" +
-        "<strong>Key takeaway:</strong> The Sender benefits from making you guess " +
-        "too high. Think carefully about <em>why</em> they chose to show you " +
-        "certain numbers and not others.</p>",
-      minTimeSeconds: 10
-    },
+        "<p>Remember: the Sender benefits from making you guess too high. " +
+        "Think carefully about <em>why</em> they chose to show you " +
+        "certain numbers and not others.</p>" +
 
-    // ──────────────────────────────────────────────────────────────────
-    // COMPREHENSION CHECK
-    // ──────────────────────────────────────────────────────────────────
-    {
-      id: "comprehension",
-      type: "comprehension",
-      title: "Comprehension Check",
-      description: "<p>Before we begin, let's make sure you understand the game.</p>",
-      questions: [
-        {
-          prompt: "A Sender has 2 numbers: 4 and 6. They choose to show you only: <strong>6</strong>. " +
-                  "What is the Sender's TRUE average of all 2 numbers?",
-          type: "radio",
-          correct: "5.00",
-          options: [
-            { value: "6.00", label: "6.00" },
-            { value: "5.00", label: "5.00" },
-            { value: "4.00", label: "4.00" },
-            { value: "5.50", label: "5.50" }
-          ],
-          remedialText: "The correct answer is 5.00. The Sender has two numbers: 4 and 6. " +
-                        "The average is (4 + 6) / 2 = 10 / 2 = 5.00. " +
-                        "Notice that the Sender showed you only the 6 (the higher number) " +
-                        "to make you think the average is higher than it really is."
-        },
-        {
-          prompt: "Why might the Sender have shown only the 6?",
-          type: "radio",
-          correct: "overestimate",
-          options: [
-            { value: "overestimate", label: "To make me guess higher than the true average" },
-            { value: "random", label: "It was random" },
-            { value: "required", label: "They had to show that number" }
-          ],
-          remedialText: "The Sender's goal is to make you overestimate the average. " +
-                        "They show you higher numbers and hide the lower ones."
-        }
-      ],
-      minTimeSeconds: 20,
-      maxAttempts: 2,
-      failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
-                   "We are unable to include your responses in the study. Thank you for your time."
+        "<p>Good luck!</p>",
+      minTimeSeconds: 8
     },
 
     // ──────────────────────────────────────────────────────────────────
