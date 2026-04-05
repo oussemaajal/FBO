@@ -164,6 +164,15 @@
     this.studyID = params.get('STUDY_ID') || params.get('study_id') || '';
     this.sessionID = params.get('SESSION_ID') || params.get('session_id') || '';
     this.devMode = params.get('dev') === 'true';
+    this.part = parseInt(params.get('part')) || 0;  // 1 = instructions only, 2 = trials only, 0 = full
+
+    // Select pages based on part
+    if (this.part === 1 && this.config.part1Pages) {
+      this.config.pages = this.config.part1Pages;
+    } else if (this.part === 2 && this.config.part2Pages) {
+      this.config.pages = this.config.part2Pages;
+    }
+    // else: use config.pages as-is (full survey, backward compatible)
 
     // Assign condition
     this.condition = this.assignCondition(
@@ -404,6 +413,8 @@
         case 'attention_check': html = self.renderAttentionCheck(page); break;
         case 'trial_attention': html = self.renderTrialAttention(page); break;
         case 'questionnaire':  html = self.renderQuestionnaire(page); break;
+        case 'completion':     html = self.renderCompletion(page); break;
+        case 'slider_tutorial': html = self.renderSliderTutorial(page); break;
         case 'debrief':        html = self.renderDebrief(page); break;
         default:               html = '<p>Unknown page type: ' + esc(page.type) + '</p>';
       }
@@ -415,7 +426,7 @@
       self.elContent.style.animation = '';
 
       // Show/hide nav buttons
-      var showNav = page.type !== 'debrief';
+      var showNav = page.type !== 'debrief' && page.type !== 'completion';
       self.elNavButtons.style.display = showNav ? '' : 'none';
 
       // Back button: hidden on first page, certain types, and block boundaries
@@ -452,15 +463,18 @@
       self.attachOptionCardHandlers();
       self.attachConsentHandler();
 
-      // Attach slider event listener (trial pages)
-      var slider = document.getElementById('trial_guess');
-      var sliderDisplay = document.getElementById('slider_value');
-      if (slider && sliderDisplay && slider.type === 'range') {
-        slider.addEventListener('input', function () {
-          sliderDisplay.textContent = parseFloat(slider.value).toFixed(1);
-          slider.setAttribute('data-touched', 'true');
-        });
-      }
+      // Attach slider event listeners (trial pages + slider tutorial)
+      var sliders = document.querySelectorAll('input[type="range"]');
+      sliders.forEach(function (slider) {
+        var displayId = slider.getAttribute('data-display');
+        var display = displayId ? document.getElementById(displayId) : document.getElementById('slider_value');
+        if (display) {
+          slider.addEventListener('input', function () {
+            display.textContent = parseFloat(slider.value).toFixed(1);
+            slider.setAttribute('data-touched', 'true');
+          });
+        }
+      });
 
       // Draw digit canvases (anti-AI: digits rendered on canvas, not as text)
       drawDigitCanvases(self._pendingCanvases);
@@ -799,6 +813,7 @@
       prolificPID: this.prolificPID,
       studyID: this.studyID,
       sessionID: this.sessionID,
+      part: this.part,
 
       // Experiment
       condition: this.condition,
@@ -889,6 +904,13 @@
     if (this.comprehensionAttempts >= (page.maxAttempts || 2)) {
       // Failed too many times
       this.comprehensionFailed = true;
+
+      // Part 1: show fail completion with code and submit data
+      if (this.part === 1 && this.config.failCompletionCode) {
+        this.renderPart1Fail();
+        return false;
+      }
+
       this.elContent.innerHTML =
         '<div class="alert alert-error">' +
         '<p><strong>Unable to continue</strong></p>' +
@@ -1370,6 +1392,86 @@
     return html;
   };
 
+  // Completion (Part 1 end -- pass)
+  SurveyEngine.prototype.renderCompletion = function (page) {
+    var self = this;
+    var html = '';
+    html += '<h1 class="page-title">' + (page.title || 'Complete!') + '</h1>';
+    html += '<div class="page-body">' + (page.body || '') + '</div>';
+
+    // Completion code
+    var code = this.config.passCompletionCode || this.config.completionCode || 'XXXXXX';
+    html += '<p style="margin-top:24px;">Your completion code:</p>';
+    html += '<div class="completion-code">' + esc(code) + '</div>';
+
+    // Submit status
+    html += '<div id="submit_status" class="alert alert-info" style="margin-top:24px;">';
+    html += 'Submitting your responses... <span class="spinner"></span>';
+    html += '</div>';
+
+    // Trigger submission after render
+    setTimeout(function () {
+      self.submitted = false;
+      self.submitData();
+    }, 500);
+
+    return html;
+  };
+
+  // Part 1 Fail -- render inline when comprehension fails
+  SurveyEngine.prototype.renderPart1Fail = function () {
+    var self = this;
+    var code = this.config.failCompletionCode || 'XXXXXX';
+    var failUrl = this.config.failCompletionUrl || '';
+
+    this.elContent.innerHTML =
+      '<h1 class="page-title">Thank You</h1>' +
+      '<div class="page-body">' +
+      '<p>Unfortunately, you were unable to answer the comprehension questions correctly. ' +
+      'We are unable to include you in Part 2 of this study.</p>' +
+      '<p>You will still be paid for completing this part. Thank you for your time!</p>' +
+      '</div>' +
+      '<p style="margin-top:24px;">Your completion code:</p>' +
+      '<div class="completion-code">' + esc(code) + '</div>' +
+      '<div id="submit_status" class="alert alert-info" style="margin-top:24px;">' +
+      'Submitting your responses... <span class="spinner"></span></div>';
+    this.elNavButtons.style.display = 'none';
+
+    // Override completion URL for fail path
+    var origUrl = this.config.completionUrl;
+    if (failUrl) this.config.completionUrl = failUrl;
+
+    setTimeout(function () {
+      self.submitted = false;
+      self.submitData();
+      // Restore
+      if (failUrl) self.config.completionUrl = origUrl;
+    }, 500);
+  };
+
+  // Slider Tutorial (Part 2 -- practice using the slider before trials)
+  SurveyEngine.prototype.renderSliderTutorial = function (page) {
+    var html = '';
+    html += '<h1 class="page-title">' + (page.title || 'How to Answer') + '</h1>';
+    html += '<div class="page-body">' + (page.body || '') + '</div>';
+
+    // Practice slider
+    html += '<div class="tutorial-slider-section">';
+    html += '<p class="tutorial-prompt">Try it now! Move the slider to <strong>' +
+            (page.targetValue || '7.5') + '</strong>:</p>';
+    html += '<div class="slider-value-display" id="tutorial_slider_value">5.5</div>';
+    html += '<div class="slider-wrapper">';
+    html += '<span class="slider-label">1</span>';
+    html += '<input type="range" class="slider-input" id="tutorial_slider" ' +
+            'min="1" max="10" step="0.1" value="5.5" data-touched="false" data-display="tutorial_slider_value">';
+    html += '<span class="slider-label">10</span>';
+    html += '</div>';
+    html += '<div class="slider-hint">Drag the slider left or right</div>';
+    html += '</div>';
+
+    return html;
+  };
+
   // Debrief
   SurveyEngine.prototype.renderDebrief = function (page) {
     var self = this;
@@ -1390,9 +1492,10 @@
       html += '</div>';
     }
 
-    // Completion code
+    // Completion code (use part2 code if available, else default)
+    var debriefCode = this.config.part2CompletionCode || this.config.completionCode || 'XXXXXX';
     html += '<p style="margin-top:24px;">Your completion code:</p>';
-    html += '<div class="completion-code">' + esc(this.config.completionCode || 'XXXXXX') + '</div>';
+    html += '<div class="completion-code">' + esc(debriefCode) + '</div>';
 
     // Submit data
     html += '<div id="submit_status" class="alert alert-info" style="margin-top:24px;">';
