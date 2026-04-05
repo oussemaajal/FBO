@@ -235,12 +235,25 @@ var SURVEY_CONFIG = {
       type: "instructions",
       title: "How the Sender is Paid",
       body:
-        "<p>The Sender earns more money when <strong>your guess is higher</strong>.</p>" +
-        "<p>It does not matter what the true average is -- only your guess matters " +
-        "for the Sender's payment.</p>" +
+        "<p>The Sender's payment is simple:</p>" +
+        "<p><strong>Sender's pay = $0.50 &times; your guess</strong></p>" +
+        "<p>That's it. The Sender's pay depends <strong>only</strong> on what you guess. " +
+        "It has nothing to do with the true average, or how close you are, or which " +
+        "numbers were hidden. The higher your guess, the more the Sender earns.</p>" +
+        "<div class='example-box'>" +
+          "<div class='example-label'>Examples</div>" +
+          "<p>Suppose the Sender has numbers 2, 4, 6 (true average = 4.00):</p>" +
+          "<ul>" +
+            "<li>You guess <strong>4.0</strong> &rarr; Sender earns $0.50 &times; 4.0 = <strong>$2.00</strong></li>" +
+            "<li>You guess <strong>7.0</strong> &rarr; Sender earns $0.50 &times; 7.0 = <strong>$3.50</strong></li>" +
+            "<li>You guess <strong>9.0</strong> &rarr; Sender earns $0.50 &times; 9.0 = <strong>$4.50</strong></li>" +
+          "</ul>" +
+          "<p>Notice: the Sender earns more when you guess higher, regardless of " +
+          "what the actual numbers are.</p>" +
+        "</div>" +
         "<p>The Sender sees all their numbers before deciding which ones to show you. " +
         "Keep this in mind.</p>",
-      minTimeSeconds: 12
+      minTimeSeconds: 20
     },
 
     // ── INSTRUCTION 6: How You are Paid ──
@@ -288,13 +301,23 @@ var SURVEY_CONFIG = {
           "<div class='sender-number-card card-shown'>9</div>" +
         "</div>" +
         "<p><strong>Step 3:</strong> You guess the average of ALL 4 numbers.</p>" +
+        "<p>The true average is (3 + 5 + 7 + 9) / 4 = <strong>6.00</strong></p>" +
         "<div class='example-box'>" +
-          "<p>True average: (3 + 5 + 7 + 9) / 4 = <strong>6.00</strong></p>" +
-          "<p>If you guessed <strong>6.0</strong>, your error is 0 &rarr; bonus = <strong>$2.00</strong></p>" +
-          "<p>If you guessed <strong>8.0</strong> (averaging only what you saw), " +
-          "your error is 2 &rarr; bonus = <strong>$1.20</strong></p>" +
+          "<div class='example-label'>If you guess 6.0 (correct)</div>" +
+          "<ul>" +
+            "<li><strong>Your bonus:</strong> $2.00 &minus; $0.40 &times; 0 = <strong>$2.00</strong></li>" +
+            "<li><strong>Sender earns:</strong> $0.50 &times; 6.0 = <strong>$3.00</strong></li>" +
+          "</ul>" +
+        "</div>" +
+        "<div class='example-box'>" +
+          "<div class='example-label'>If you guess 8.0 (too high)</div>" +
+          "<ul>" +
+            "<li><strong>Your bonus:</strong> $2.00 &minus; $0.40 &times; 2 = <strong>$1.20</strong></li>" +
+            "<li><strong>Sender earns:</strong> $0.50 &times; 8.0 = <strong>$4.00</strong></li>" +
+          "</ul>" +
+          "<p class='example-note'>You lose money by guessing too high, but the Sender earns more.</p>" +
         "</div>",
-      minTimeSeconds: 24
+      minTimeSeconds: 27
     },
 
     // ── INSTRUCTION 8: Summary ──
@@ -325,8 +348,8 @@ var SURVEY_CONFIG = {
             "</div>" +
           "</div>" +
         "</div>" +
-        "<p style='margin-top:16px;'><strong>You</strong> are paid for accuracy. " +
-        "<strong>The Sender</strong> is paid when your guess is higher.</p>" +
+        "<p style='margin-top:16px;'><strong>You</strong> earn more when your guess is accurate. " +
+        "<strong>The Sender</strong> earns $0.50 &times; your guess (higher guess = more pay for them).</p>" +
         "<p style='text-align:center; margin-top:16px;'>Now let's check that you've got it!</p>",
       minTimeSeconds: 14
     },
@@ -355,7 +378,7 @@ var SURVEY_CONFIG = {
           correct: "higher_guess",
           options: [
             { value: "accuracy", label: "The Sender earns more when my guess is close to the true average" },
-            { value: "higher_guess", label: "The Sender earns more when my guess is higher" },
+            { value: "higher_guess", label: "The Sender earns $0.50 times my guess -- higher guess means more pay" },
             { value: "flat", label: "The Sender gets a flat payment regardless of my guess" },
             { value: "lower_guess", label: "The Sender earns more when my guess is lower" }
           ],
