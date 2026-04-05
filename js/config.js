@@ -71,8 +71,8 @@ var SURVEY_CONFIG = {
   bonus: {
     enabled: true,
     currency: "USD",
-    baseAmount: 3.00,
-    penaltyPerUnit: 0.60,
+    baseAmount: 2.00,
+    penaltyPerUnit: 0.40,
     floor: 0.00,
     selectionMethod: "random_trial"
   },
@@ -93,7 +93,7 @@ var SURVEY_CONFIG = {
       body: "<p>In this study, you will play a short estimation game. " +
             "It takes approximately <strong>15 minutes</strong> to complete.</p>" +
             "<p>You will receive <strong>$3.00 base payment</strong> plus an " +
-            "<strong>accuracy-based bonus of up to $3.00</strong> depending on how " +
+            "<strong>accuracy-based bonus of up to $2.00</strong> depending on how " +
             "well you perform.</p>" +
             "<p>Your responses are anonymous and will be used for academic research only.</p>" +
             "<p>Please complete this study on a <strong>desktop or laptop computer</strong> " +
@@ -114,7 +114,7 @@ var SURVEY_CONFIG = {
             "involving numbers and answer a few questions afterward.</p>" +
             "<p><strong>Time:</strong> Approximately 15 minutes.</p>" +
             "<p><strong>Compensation:</strong> You will receive a $3.00 base payment " +
-            "plus an accuracy-based bonus of up to $3.00 depending on how close your " +
+            "plus an accuracy-based bonus of up to $2.00 depending on how close your " +
             "guesses are to the true averages.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
@@ -253,7 +253,7 @@ var SURVEY_CONFIG = {
         "<p>At the end of the study, one round will be randomly selected. " +
         "Your bonus depends on <strong>how close your guess was to the true " +
         "average</strong> in that round. The closer you are, the more you earn " +
-        "(up to $3.00).</p>" +
+        "(up to $2.00).</p>" +
 
         "<p style='padding:16px; background:#f0f4ff; border-radius:8px; " +
         "border-left:4px solid var(--color-primary);'>" +
@@ -428,6 +428,42 @@ var SURVEY_CONFIG = {
       ],
       correctAnswer: "strongly_disagree",
       minTimeSeconds: 20
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // POST-TASK QUESTIONNAIRE
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "posttask",
+      type: "questionnaire",
+      title: "Your Experience",
+      minTimeSeconds: 20,
+      questions: [
+        {
+          id: "hidden_belief",
+          prompt: "When the Sender didn't show you a number, what did you think that number was likely to be?",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "low", label: "Low (1-4)" },
+            { value: "average", label: "About average (5-6)" },
+            { value: "high", label: "High (7-10)" },
+            { value: "didnt_think", label: "I didn't really think about the hidden numbers" }
+          ]
+        },
+        {
+          id: "adjustment",
+          prompt: "When making your guesses, how much did you adjust for numbers the Sender didn't show?",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "a_lot", label: "A lot -- I guessed well below what was shown" },
+            { value: "somewhat", label: "Somewhat -- I lowered my guess a bit" },
+            { value: "a_little", label: "A little -- I mostly went with what I saw" },
+            { value: "not_at_all", label: "Not at all -- I based my guess on the shown numbers" }
+          ]
+        }
+      ]
     },
 
     // ──────────────────────────────────────────────────────────────────
