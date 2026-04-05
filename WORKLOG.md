@@ -573,3 +573,101 @@ constraint, 3 trial attention checks, varied stimuli (3 low-disclosed + 6 high-d
 1. Oussema reviews the live survey at https://oussemaajal.github.io/FBO/
 2. Run full pilot (n=80, 40 per condition) or proceed to full study (n=240)
 3. Build analysis pipeline for within-subjects 18-trial design
+
+---
+
+## 2026-04-05 | Session 7: Two-part study split with visual instructions
+
+**Goal:** Split the survey into two Prolific studies so participants who fail the
+comprehension quiz get paid ($1) without accessing the main experiment, and passers
+transition quickly to Part 2.
+
+**What happened:**
+
+1. **Part 1 pages (config.js `part1Pages`, 12 pages):**
+   - Welcome: explains $1 payment, quiz requirement, Part 2 bonus opportunity.
+   - Consent: Part 1-specific (5 min, $1, conditional Part 2 invite).
+   - 8 visual instruction pages:
+     - "Meet the Players": inline SVG character icons (blue=You, orange=Sender) with labels.
+     - "Step 1: Sender Gets Numbers": dice emoji, example box with 4 number cards (3,5,7,9).
+     - "Step 2: Sender Picks": card visuals showing shown (green border) vs hidden (gray, "?").
+     - "Step 3: You Guess": worked example -- shown 7,9 but true avg of 3,5,7,9 = 6.00.
+     - "Why Does This Matter?": warning callout about Sender's incentive.
+     - "The Sender's Strategy": show/hide strategy visual with eye/no-entry icons.
+     - "Your Bonus": info callout about Part 2 bonus structure.
+     - "Putting It All Together": 3-step flow diagram (numbered circles with arrows).
+   - 4-question comprehension quiz: same as before but using 3,5,7,9 example.
+   - Completion page: shows PASS1FBO code, submits data.
+   - Each page has generous minTimeSeconds (8-15s).
+
+2. **Part 2 pages (config.js `part2Pages`, 49 pages after expansion):**
+   - Welcome back: $2.50 base + up to $2.00 bonus.
+   - Quick reminder: compact flow diagram (3 steps).
+   - Slider tutorial: interactive practice slider, target value 7.5.
+   - Format explanation: condition-specific (reuses existing template system).
+   - Ready page: summary reminders before trials start.
+   - Trial blocks 1 and 2 (9 trials each, same stimuli as before).
+   - Transition page between blocks (condition-specific format change).
+   - Attention check, posttask, demographics, debrief (same as before).
+   - Debrief uses `part2CompletionCode` (PART2FBO).
+
+3. **Engine.js updates (from previous session, verified this session):**
+   - `?part=1` loads `part1Pages`, `?part=2` loads `part2Pages`, no param = legacy `pages`.
+   - New page types: `completion` (pass endpoint), `slider_tutorial` (practice slider).
+   - `renderPart1Fail()`: inline rendering when quiz fails in Part 1, shows FAIL1FBO code.
+   - `renderDebrief()` uses `part2CompletionCode` when available.
+   - `getAllData()` includes `part` field.
+
+4. **CSS additions (survey.css):**
+   - `.players-visual`, `.player-card`, `.player-icon`, `.player-vs`: SVG character layout.
+   - `.flow-step-visual`: single-step callout with emoji icon.
+   - `.example-box`, `.example-label`, `.example-note`: purple-tinted example containers.
+   - `.sender-number-card.card-shown` (green border), `.card-hidden` (gray with "?").
+   - `.callout-box`, `.callout-warning`, `.callout-info`: styled callout boxes.
+   - `.strategy-visual`, `.strategy-item`, `.strategy-show`, `.strategy-hide`: strategy display.
+   - `.game-flow`, `.flow-step`, `.flow-step-number`, `.flow-arrow`: 3-step flow diagram.
+   - `.game-flow-compact`: smaller variant for Part 2 reminder.
+   - `.tutorial-slider-section`: styled container for slider practice.
+
+5. **Google Apps Script (sheets-script.gs):**
+   - After Part 1 data arrives with `comprehensionFailed: false`, calls Prolific API
+     to add PID to participant group (`addToParticipantGroup`).
+   - Uses Script Properties for `PROLIFIC_API_TOKEN` and `PROLIFIC_GROUP_ID`.
+   - Non-blocking: group-add failure doesn't fail the data submission.
+
+6. **Prolific CLI (RUN_PROLIFIC_STUDY.py):**
+   - New `create-two-part` command: creates participant group, Part 1 study, Part 2 study.
+   - Part 1: completion codes PASS1FBO and FAIL1FBO (both auto-approve).
+   - Part 2: filtered to participant group members (allowlist).
+   - Saves setup JSON with all IDs to `data/raw/prolific/`.
+   - Dry-run tested successfully.
+
+7. **Config.py updates:**
+   - Added `part1_reward_pence: 100`, `part1_estimated_minutes: 5`.
+   - Added `part2_reward_pence: 250`, `part2_estimated_minutes: 12`.
+   - Kept legacy `prolific_reward_pence: 300` for backward compat.
+
+8. **Utils.py updates:**
+   - `ProlificClient.create_study()`: new params `completion_codes` (multi-code),
+     `participant_group_id` (allowlist filter).
+   - New method `create_participant_group(name)`.
+
+**Verified:**
+- Part 1 loads correctly (?part=1): 12 pages, visual instructions render with SVG icons,
+  card visuals, flow diagram, example boxes. Quiz auto-passes in dev mode. Completion page
+  shows PASS1FBO code.
+- Part 2 loads correctly (?part=2): 49 pages, welcome back, slider tutorial with interactive
+  slider, condition-specific format explanation, trial blocks, debrief with PART2FBO code.
+- Prolific CLI `create-two-part --pilot --dry-run` runs successfully.
+- Deployed to gh-pages.
+
+**Where this leaves the project:**
+Two-part study fully implemented. Survey deployed at:
+- Part 1: https://oussemaajal.github.io/FBO/?part=1
+- Part 2: https://oussemaajal.github.io/FBO/?part=2
+
+**Next session should:**
+1. Set up Google Apps Script properties (PROLIFIC_API_TOKEN, PROLIFIC_GROUP_ID)
+2. Test end-to-end: Part 1 submission -> group enrollment -> Part 2 access
+3. Create Prolific studies via `create-two-part --pilot`
+4. Publish and run pilot (80 participants)

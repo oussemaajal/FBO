@@ -313,3 +313,55 @@ second try -- the constraint is mild with 9 trials and only 3 possible k values.
 
 The survey is now 52 pages (49 base + 3 attention checks), takes about 12-15 minutes, and is
 deployed to GitHub Pages. Ready for Oussema's final review before launching the pilot.
+
+---
+
+## 2026-04-05
+
+**Splitting the survey: paying for comprehension, not just completion.**
+
+The single biggest design problem with running a comprehension-gated survey on Prolific is
+what happens to people who fail the quiz. If you screen them out after they've already spent
+time learning the game, you either pay them for nothing useful or you don't pay them and risk
+violating Prolific's policies. Neither is great.
+
+The solution was to split the experiment into two separate Prolific studies. Part 1 is a
+standalone task: learn the rules of the estimation game and pass a quiz. It takes about 5
+minutes and pays $1 regardless of the quiz result. Participants who pass get enrolled in a
+Prolific participant group via an API call from the Google Apps Script backend. Part 2 is a
+separate study restricted to members of that group -- only passers can see it. This way,
+everyone gets paid for their time, but only comprehending participants enter the main experiment.
+
+The Part 1 instructions were rebuilt from scratch with a focus on visual teaching. Each page
+is bite-sized -- no more than 60-80 words -- with generous minimum read times (8-15 seconds
+per page). SVG character icons introduce the two players: a blue figure for "You" and an
+orange one for "The Sender." Playing card visuals show the Sender's numbers, with green-bordered
+cards for shown numbers and gray question-mark cards for hidden ones. A worked example using
+the numbers 3, 5, 7, 9 is threaded across multiple screens: first the Sender receives them, then
+they strategically choose to show only the 7 and 9, then the participant sees why the true
+average (6.00) is lower than what was disclosed (8.00). A flow diagram with numbered circles
+and arrows ties it all together at the end.
+
+The design philosophy here borrows from game tutorial design rather than academic survey
+design. Video games teach complex mechanics by showing one thing at a time, letting the player
+absorb it, then building on it. Academic surveys tend to front-load dense text and hope
+participants read it. The step-by-step visual approach should produce much better comprehension
+-- and the quiz will confirm whether it does.
+
+Part 2 opens with a compact reminder (the same flow diagram in miniature), then introduces the
+slider input through an interactive practice exercise before participants encounter their first
+trial. This slider tutorial was specifically requested because participants shouldn't be
+surprised by the input mechanism at the same time they're trying to think about strategic
+disclosure. Separating the "how do I answer" question from the "what should I answer" question
+reduces cognitive load at the moment it matters most.
+
+The Prolific infrastructure was also updated. A new CLI command (`create-two-part`) automates
+the three-step process: create a participant group, create Part 1 with dual completion codes
+(pass and fail, both auto-approved), and create Part 2 with the group as an allowlist filter.
+The Google Apps Script now calls the Prolific API to add passing PIDs to the group in real time,
+so the transition from Part 1 to Part 2 should take only a few minutes -- fast enough that
+participants don't forget what they learned.
+
+The whole system was tested end-to-end locally and deployed to GitHub Pages. The next step is
+configuring the Google Apps Script properties with the actual Prolific API token and group ID,
+then running the pilot.

@@ -43,7 +43,7 @@ Participants play an "estimation game" against a strategic Sender who:
 3. Chooses which numbers to reveal
 
 The participant guesses the true average of ALL N numbers (including hidden ones).
-Accuracy-based bonus: up to $1.00 per participant.
+Accuracy-based bonus: up to $2.00 per participant.
 
 ### Within-Subjects Variation
 
@@ -58,35 +58,39 @@ Accuracy-based bonus: up to $1.00 per participant.
 
 ## Current Status
 
-**Phase:** Survey deployed with 2-condition design, ready for final review
+**Phase:** Two-part study deployed, ready for pilot
+
+**Architecture:** Two separate Prolific studies:
+- **Part 1** (~5 min, $1.00): Visual instructions + comprehension quiz. Passers are added to a Prolific participant group via API.
+- **Part 2** (~12 min, $2.50 + up to $2.00 bonus): Trials, posttask, demographics, debrief. Restricted to Part 1 passers via group allowlist.
 
 **What's built:**
+- **Two-part Prolific study flow** with automatic participant group enrollment
 - Custom web survey engine (config-driven, generic, reusable)
+- **Part 1**: 8 visual instruction pages with SVG character icons, card visuals, flow diagram, worked example, 4-question comprehension quiz
+- **Part 2**: Welcome-back reminder, interactive slider tutorial, format explanation, 18 trials in 2 blocks, attention checks, posttask, demographics, debrief
 - Within-subjects design: 18 trials (9 per format), counterbalanced order
 - 2 conditions: clean_first vs explicit_first (format order)
 - Fully random trial ordering with no-k-adjacency constraint
-- Format-specific instruction pages (each format explained just before its block)
-- 5-page instruction flow: intro, mechanics+visual, incentives, format, bonus
-- Sender number card visual (CSS playing card aesthetic)
-- N-intro splash pages before each trial (inline, orange N for visual distinction)
-- 3 trial attention checks (recall questions after randomly-selected trials)
-- Varied stimuli: 3 low-disclosed trials (disclosed <= 6) mixed with 6 high-disclosed
-- Professional UI with responsive design, slider input for guesses
 - Canvas-rendered digits (anti-AI: no text in DOM)
 - Bot/AI detection (honeypot, invisible instruction, behavioral tracking)
-- Comprehension checks with remedial flow (N=2 example)
-- Min-time enforcement on instruction pages
+- Min-time enforcement on all instruction pages
 - Seeded trial randomization (deterministic per participant)
 - Accuracy-based bonus calculation and display
 - localStorage backup for mid-survey resume
-- Google Sheets backend (Apps Script)
-- Prolific CLI tool for study management
-- Deployed to GitHub Pages: https://oussemaajal.github.io/FBO/
+- Google Sheets backend with Prolific API integration
+- Prolific CLI tool with `create-two-part` command
+- Deployed to GitHub Pages
+
+**Live URLs:**
+- Part 1: https://oussemaajal.github.io/FBO/?part=1
+- Part 2: https://oussemaajal.github.io/FBO/?part=2
 
 **What's next:**
-1. Oussema reviews survey at https://oussemaajal.github.io/FBO/
-2. Run full pilot (n=80, 40 per condition) or proceed to full study (n=240)
-3. Build analysis pipeline for within-subjects 18-trial design
+1. Configure Google Apps Script properties (PROLIFIC_API_TOKEN, PROLIFIC_GROUP_ID)
+2. Test end-to-end: Part 1 -> group enrollment -> Part 2 access
+3. Run pilot (n=80, 40 per condition) via `create-two-part --pilot`
+4. Build analysis pipeline for within-subjects 18-trial design
 
 ## Directory Structure
 
@@ -138,13 +142,20 @@ FBO/
 ## Data Flow
 
 ```
-Participant clicks Prolific link
-  --> GitHub Pages survey (?PROLIFIC_PID=X&STUDY_ID=Y&SESSION_ID=Z)
+Part 1: Participant clicks Prolific link
+  --> GitHub Pages survey (?part=1&PROLIFIC_PID=X&STUDY_ID=Y&SESSION_ID=Z)
+  --> Visual instructions + comprehension quiz
+  --> JSON POST to Google Sheets Apps Script
+  --> If passed: Apps Script adds PID to Prolific participant group via API
+  --> Redirect to Prolific (PASS1FBO or FAIL1FBO code)
+
+Part 2: Participant (group member) clicks Prolific link
+  --> GitHub Pages survey (?part=2&PROLIFIC_PID=X&STUDY_ID=Y&SESSION_ID=Z)
   --> Engine assigns condition (hash of PID)
-  --> Participant completes survey (responses + timing + bot metrics)
+  --> Slider tutorial, then 18 trials + posttask + demographics
   --> Bonus calculated client-side, shown on debrief
   --> JSON POST to Google Sheets Apps Script
-  --> Redirect to Prolific completion URL
+  --> Redirect to Prolific (PART2FBO code)
 
 Post-collection:
   --> Download Google Sheet as CSV
@@ -159,18 +170,19 @@ Post-collection:
 ```bash
 cd survey
 python -m http.server 8080
-# Open: http://localhost:8080/?PROLIFIC_PID=TEST123&STUDY_ID=TEST&SESSION_ID=TEST
+# Part 1: http://localhost:8080/?part=1&dev=true&PROLIFIC_PID=TEST123
+# Part 2: http://localhost:8080/?part=2&dev=true&PROLIFIC_PID=TEST123
 ```
 
 ### Prolific management
 ```bash
 cd code/02_collect
-python RUN_PROLIFIC_STUDY.py create --pilot --dry-run  # Preview pilot study
-python RUN_PROLIFIC_STUDY.py create --pilot             # Create pilot study
-python RUN_PROLIFIC_STUDY.py publish STUDY_ID           # Publish study
-python RUN_PROLIFIC_STUDY.py status STUDY_ID            # Check status
-python RUN_PROLIFIC_STUDY.py approve STUDY_ID           # Approve submissions
-python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE  # Pay bonuses
+python RUN_PROLIFIC_STUDY.py create-two-part --pilot --dry-run  # Preview two-part setup
+python RUN_PROLIFIC_STUDY.py create-two-part --pilot             # Create group + both studies
+python RUN_PROLIFIC_STUDY.py publish STUDY_ID                    # Publish a study
+python RUN_PROLIFIC_STUDY.py status STUDY_ID                     # Check status
+python RUN_PROLIFIC_STUDY.py approve STUDY_ID                    # Approve submissions
+python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE           # Pay bonuses
 ```
 
 ## Environment Variables
