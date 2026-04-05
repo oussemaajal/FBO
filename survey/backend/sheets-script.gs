@@ -55,6 +55,17 @@ function doPost(e) {
 
     sheet.appendRow(row);
 
+    // If Part 1 submission and participant passed comprehension,
+    // add their Prolific PID to the participant group for Part 2 access.
+    if (data.part === 1 && data.comprehensionFailed === false && data.prolificPID) {
+      try {
+        addToParticipantGroup(data.prolificPID);
+      } catch (groupErr) {
+        Logger.log("Prolific group error: " + groupErr.toString());
+        // Don't fail the whole submission if group add fails
+      }
+    }
+
     return ContentService.createTextOutput(JSON.stringify({
       status: "success",
       row: sheet.getLastRow()
@@ -95,6 +106,55 @@ function flattenObject(obj, prefix, result) {
   }
 
   return result;
+}
+
+// ── Prolific Participant Group Integration ──────────────────────────────
+// When a participant passes Part 1, add them to a Prolific participant
+// group so they become eligible for Part 2 (which uses the group as an
+// allowlist filter).
+//
+// SETUP:
+// 1. Go to Script Properties (Project Settings > Script Properties)
+// 2. Add: PROLIFIC_API_TOKEN = your Prolific API token
+// 3. Add: PROLIFIC_GROUP_ID = the participant group ID for Part 2 eligibility
+//
+// To create the participant group via Prolific API:
+//   POST https://api.prolific.com/api/v1/participant-groups/
+//   Body: { "name": "FBO Part 1 Passed" }
+//   Save the returned "id" as PROLIFIC_GROUP_ID.
+
+function addToParticipantGroup(prolificPID) {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty("PROLIFIC_API_TOKEN");
+  var groupId = props.getProperty("PROLIFIC_GROUP_ID");
+
+  if (!token || !groupId) {
+    Logger.log("Prolific credentials not configured. Skipping group add for PID: " + prolificPID);
+    return;
+  }
+
+  var url = "https://api.prolific.com/api/v1/participant-groups/" + groupId + "/participants/";
+
+  var options = {
+    method: "post",
+    contentType: "application/json",
+    headers: {
+      "Authorization": "Token " + token
+    },
+    payload: JSON.stringify({
+      participant_ids: [prolificPID]
+    }),
+    muteHttpExceptions: true
+  };
+
+  var response = UrlFetchApp.fetch(url, options);
+  var code = response.getResponseCode();
+
+  if (code >= 200 && code < 300) {
+    Logger.log("Added PID " + prolificPID + " to group " + groupId);
+  } else {
+    Logger.log("Prolific API error (" + code + "): " + response.getContentText());
+  }
 }
 
 /**

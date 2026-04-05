@@ -121,7 +121,14 @@ EXPERIMENT_PARAMS = {
         'n_per_condition': 40,  # 40 per condition = 80 total
     },
 
-    # Payment (Prolific)
+    # Payment (Prolific) -- two-part study
+    # Part 1: instructions + quiz (~5 min, $1.00)
+    # Part 2: trials + debrief (~12 min, $2.50 base + up to $2.00 bonus)
+    'part1_reward_pence': 100,        # GBP ~1.00
+    'part1_estimated_minutes': 5,
+    'part2_reward_pence': 250,        # GBP ~2.50
+    'part2_estimated_minutes': 12,
+    # Legacy (full survey, kept for backward compat)
     'prolific_reward_pence': 300,     # USD 3.00 base payment
     'estimated_minutes': 15,
 

@@ -104,12 +104,21 @@ class ProlificClient:
         description: str,
         external_study_url: str,
         completion_code: str = None,
+        completion_codes: list = None,
         total_available_places: int = 80,
         reward: int = 150,
         estimated_completion_time: int = 10,
         eligibility_requirements: list = None,
+        participant_group_id: str = None,
     ) -> dict:
-        """Create a new Prolific study. Returns study dict with 'id'."""
+        """Create a new Prolific study. Returns study dict with 'id'.
+
+        Args:
+            completion_codes: List of dicts for multi-code studies, e.g.
+                [{"code": "PASS1FBO", "code_type": "COMPLETED",
+                  "actions": [{"action": "APPROVE"}]}]
+            participant_group_id: Restrict to members of this group (allowlist).
+        """
         if DRY_RUN:
             print(f"[DRY-RUN] Would create Prolific study: {name}")
             return {'id': 'dry-run-study-id', 'name': name, 'status': 'UNPUBLISHED'}
@@ -119,15 +128,30 @@ class ProlificClient:
             'description': description,
             'external_study_url': external_study_url,
             'prolific_id_option': 'url_parameters',
-            'completion_code': completion_code or PROLIFIC_CONFIG['completion_code'],
-            'completion_option': 'code',
             'total_available_places': total_available_places,
             'reward': reward,
             'estimated_completion_time': estimated_completion_time,
             'project': self.project_id,
         }
+
+        # Completion codes: multi-code (two-part) or single code
+        if completion_codes:
+            data['completion_codes'] = completion_codes
+        else:
+            data['completion_code'] = completion_code or PROLIFIC_CONFIG['completion_code']
+            data['completion_option'] = 'code'
+
         if eligibility_requirements:
             data['eligibility_requirements'] = eligibility_requirements
+
+        # Filter to participant group (for Part 2 allowlist)
+        if participant_group_id:
+            data['filters'] = [
+                {
+                    'filter_id': 'participant_group_allowlist',
+                    'selected_values': [participant_group_id],
+                }
+            ]
 
         return self._post('studies/', data)
 
@@ -148,6 +172,16 @@ class ProlificClient:
     def get_study_status(self, study_id: str) -> dict:
         """Get study status and submission counts."""
         return self._get(f'studies/{study_id}/')
+
+    # ── Participant Groups ─────────────────────────────────────────────
+
+    def create_participant_group(self, name: str) -> dict:
+        """Create a participant group. Returns dict with 'id'."""
+        if DRY_RUN:
+            print(f"[DRY-RUN] Would create participant group: {name}")
+            return {'id': 'dry-run-group-id', 'name': name}
+        data = {'name': name, 'project_id': self.project_id}
+        return self._post('participant-groups/', data)
 
     # ── Submissions ───────────────────────────────────────────────────
 

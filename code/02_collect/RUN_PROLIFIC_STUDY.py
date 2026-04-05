@@ -2,15 +2,16 @@
 Create and manage Prolific studies for the FBO experiment.
 
 Usage:
-    python RUN_PROLIFIC_STUDY.py create --pilot        # Create pilot study (80 participants)
-    python RUN_PROLIFIC_STUDY.py create                # Create full study (240 participants)
-    python RUN_PROLIFIC_STUDY.py publish STUDY_ID      # Publish a created study
-    python RUN_PROLIFIC_STUDY.py status STUDY_ID       # Check status & submissions
-    python RUN_PROLIFIC_STUDY.py submissions STUDY_ID  # List all submissions
-    python RUN_PROLIFIC_STUDY.py approve STUDY_ID      # Approve all awaiting submissions
-    python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE  # Pay bonuses from CSV
-    python RUN_PROLIFIC_STUDY.py pause STUDY_ID        # Pause an active study
-    python RUN_PROLIFIC_STUDY.py list                   # List all studies
+    python RUN_PROLIFIC_STUDY.py create-two-part --pilot  # Create Part 1, group, Part 2 (pilot)
+    python RUN_PROLIFIC_STUDY.py create-two-part          # Create two-part study (full)
+    python RUN_PROLIFIC_STUDY.py create --pilot            # Create single study (legacy)
+    python RUN_PROLIFIC_STUDY.py publish STUDY_ID          # Publish a created study
+    python RUN_PROLIFIC_STUDY.py status STUDY_ID           # Check status & submissions
+    python RUN_PROLIFIC_STUDY.py submissions STUDY_ID      # List all submissions
+    python RUN_PROLIFIC_STUDY.py approve STUDY_ID          # Approve all awaiting submissions
+    python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE # Pay bonuses from CSV
+    python RUN_PROLIFIC_STUDY.py pause STUDY_ID            # Pause an active study
+    python RUN_PROLIFIC_STUDY.py list                      # List all studies
 
 Options:
     --pilot       Use pilot sample sizes
@@ -26,6 +27,118 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from config import (PATHS, EXPERIMENT_PARAMS, PROLIFIC_CONFIG, SURVEY_CONFIG,
                     ensure_dirs_exist)
 from utils import ProlificClient, set_dry_run
+
+
+def cmd_create_two_part(args):
+    """Create the two-part study: participant group, Part 1, Part 2."""
+    ensure_dirs_exist()
+    if args.dry_run:
+        set_dry_run(True)
+
+    params = EXPERIMENT_PARAMS['pilot'] if args.pilot else EXPERIMENT_PARAMS
+    mode = "PILOT" if args.pilot else "FULL"
+    n_per_condition = params['n_per_condition']
+    n_conditions = len(EXPERIMENT_PARAMS['conditions'])
+    total = n_per_condition * n_conditions
+
+    survey_url = SURVEY_CONFIG.get('survey_url', '')
+    if not survey_url:
+        print("WARNING: survey_url not set in config.py SURVEY_CONFIG.")
+        survey_url = "https://example.com/survey"
+
+    client = ProlificClient()
+
+    # Step 1: Create participant group
+    print("Step 1: Creating participant group for Part 2 eligibility...")
+    group = client.create_participant_group(f"FBO {mode} - Part 1 Passed")
+    group_id = group.get('id', 'unknown')
+    print(f"  Group created: {group_id}")
+
+    # Step 2: Create Part 1 study
+    part1_url = (survey_url + "?part=1"
+                 "&PROLIFIC_PID={{%PROLIFIC_PID%}}"
+                 "&STUDY_ID={{%STUDY_ID%}}"
+                 "&SESSION_ID={{%SESSION_ID%}}")
+
+    part1_reward = EXPERIMENT_PARAMS.get('part1_reward_pence', 100)
+    part1_minutes = EXPERIMENT_PARAMS.get('part1_estimated_minutes', 5)
+
+    print(f"\nStep 2: Creating Part 1 study ({total} participants)...")
+    print(f"  Reward: {part1_reward}p, Est. time: {part1_minutes} min")
+    study1 = client.create_study(
+        name=f"FBO {mode} Part 1: Learn the Game",
+        description=(
+            "Learn the rules of a short estimation game and take a quiz. "
+            f"Takes about {part1_minutes} minutes. "
+            f"You will be paid GBP {part1_reward/100:.2f} for this part. "
+            "If you pass the quiz, you will be invited to Part 2 for additional pay and bonus."
+        ),
+        external_study_url=part1_url,
+        total_available_places=total,
+        reward=part1_reward,
+        estimated_completion_time=part1_minutes,
+        completion_codes=[
+            {"code": "PASS1FBO", "code_type": "COMPLETED", "actions": [{"action": "APPROVE"}]},
+            {"code": "FAIL1FBO", "code_type": "COMPLETED", "actions": [{"action": "APPROVE"}]},
+        ],
+    )
+    study1_id = study1.get('id', 'unknown')
+    print(f"  Part 1 created: {study1_id}")
+
+    # Step 3: Create Part 2 study (filtered to group members only)
+    part2_url = (survey_url + "?part=2"
+                 "&PROLIFIC_PID={{%PROLIFIC_PID%}}"
+                 "&STUDY_ID={{%STUDY_ID%}}"
+                 "&SESSION_ID={{%SESSION_ID%}}")
+
+    part2_reward = EXPERIMENT_PARAMS.get('part2_reward_pence', 250)
+    part2_minutes = EXPERIMENT_PARAMS.get('part2_estimated_minutes', 12)
+
+    print(f"\nStep 3: Creating Part 2 study (group-filtered)...")
+    print(f"  Reward: {part2_reward}p, Est. time: {part2_minutes} min")
+    study2 = client.create_study(
+        name=f"FBO {mode} Part 2: Estimation Game",
+        description=(
+            "Play an estimation game where you guess averages based on "
+            "strategically revealed information. "
+            f"Takes about {part2_minutes} minutes. "
+            f"You will receive GBP {part2_reward/100:.2f} base payment "
+            "plus an accuracy-based bonus of up to $2.00."
+        ),
+        external_study_url=part2_url,
+        total_available_places=total,
+        reward=part2_reward,
+        estimated_completion_time=part2_minutes,
+        participant_group_id=group_id,
+    )
+    study2_id = study2.get('id', 'unknown')
+    print(f"  Part 2 created: {study2_id}")
+
+    # Save all IDs
+    setup = {
+        'mode': mode,
+        'group_id': group_id,
+        'part1_study_id': study1_id,
+        'part2_study_id': study2_id,
+        'total_participants': total,
+    }
+    info_path = PATHS['raw_prolific'] / f"two_part_setup_{mode.lower()}.json"
+    info_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(info_path, 'w') as f:
+        json.dump(setup, f, indent=2, default=str)
+
+    print(f"\n{'='*60}")
+    print(f"Two-part study created successfully!")
+    print(f"  Group ID:      {group_id}")
+    print(f"  Part 1 Study:  {study1_id}")
+    print(f"  Part 2 Study:  {study2_id}")
+    print(f"  Setup saved:   {info_path}")
+    print(f"\nIMPORTANT: Set these in Google Apps Script properties:")
+    print(f"  PROLIFIC_API_TOKEN = (your Prolific API token)")
+    print(f"  PROLIFIC_GROUP_ID  = {group_id}")
+    print(f"\nTo publish Part 1: python RUN_PROLIFIC_STUDY.py publish {study1_id}")
+    print(f"To publish Part 2: python RUN_PROLIFIC_STUDY.py publish {study2_id}")
+    print(f"  (Publish Part 2 shortly after Part 1 so passers can transition quickly)")
 
 
 def cmd_create(args):
@@ -181,8 +294,12 @@ if __name__ == "__main__":
 
     subparsers = parser.add_subparsers(dest='command', help='Action to perform')
 
-    # create
-    sub_create = subparsers.add_parser('create', help='Create a new study')
+    # create-two-part
+    sub_two = subparsers.add_parser('create-two-part', help='Create two-part study (group + Part 1 + Part 2)')
+    sub_two.add_argument('--pilot', action='store_true', help='Use pilot sample sizes')
+
+    # create (legacy single study)
+    sub_create = subparsers.add_parser('create', help='Create a single study (legacy)')
     sub_create.add_argument('--pilot', action='store_true', help='Use pilot sample sizes')
 
     # list
@@ -216,6 +333,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     commands = {
+        'create-two-part': cmd_create_two_part,
         'create': cmd_create,
         'list': cmd_list,
         'publish': cmd_publish,
