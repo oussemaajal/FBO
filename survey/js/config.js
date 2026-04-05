@@ -91,8 +91,8 @@ var SURVEY_CONFIG = {
       title: "Welcome to this Research Study",
       subtitle: "Thank you for participating.",
       body: "<p>In this study, you will play a short estimation game. " +
-            "It takes approximately <strong>13 minutes</strong> to complete.</p>" +
-            "<p>You will receive <strong>$2.00 base payment</strong> plus an " +
+            "It takes approximately <strong>15 minutes</strong> to complete.</p>" +
+            "<p>You will receive <strong>$3.00 base payment</strong> plus an " +
             "<strong>accuracy-based bonus of up to $2.00</strong> depending on how " +
             "well you perform.</p>" +
             "<p>Your responses are anonymous and will be used for academic research only.</p>" +
@@ -112,8 +112,8 @@ var SURVEY_CONFIG = {
             "decision-making under uncertainty.</p>" +
             "<p><strong>What you will do:</strong> You will play an estimation game " +
             "involving numbers and answer a few questions afterward.</p>" +
-            "<p><strong>Time:</strong> Approximately 13 minutes.</p>" +
-            "<p><strong>Compensation:</strong> You will receive a $2.00 base payment " +
+            "<p><strong>Time:</strong> Approximately 15 minutes.</p>" +
+            "<p><strong>Compensation:</strong> You will receive a $3.00 base payment " +
             "plus an accuracy-based bonus of up to $2.00 depending on how close your " +
             "guesses are to the true averages.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
@@ -122,7 +122,8 @@ var SURVEY_CONFIG = {
             "<p><strong>Voluntary:</strong> You may withdraw at any time by closing " +
             "this window. Partial data will not be used.</p>",
       mustAgree: true,
-      declineMessage: "You must agree to participate in order to continue with this study."
+      declineMessage: "You must agree to participate in order to continue with this study.",
+      minTimeSeconds: 20
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -300,6 +301,7 @@ var SURVEY_CONFIG = {
                         "They show you higher numbers and hide the lower ones."
         }
       ],
+      minTimeSeconds: 20,
       maxAttempts: 2,
       failMessage: "Unfortunately, you were unable to answer the comprehension questions correctly. " +
                    "We are unable to include your responses in the study. Thank you for your time."
@@ -424,7 +426,44 @@ var SURVEY_CONFIG = {
         { value: "agree", label: "Agree" },
         { value: "strongly_agree", label: "Strongly Agree" }
       ],
-      correctAnswer: "strongly_disagree"
+      correctAnswer: "strongly_disagree",
+      minTimeSeconds: 20
+    },
+
+    // ──────────────────────────────────────────────────────────────────
+    // POST-TASK QUESTIONNAIRE
+    // ──────────────────────────────────────────────────────────────────
+    {
+      id: "posttask",
+      type: "questionnaire",
+      title: "Your Experience",
+      minTimeSeconds: 20,
+      questions: [
+        {
+          id: "hidden_belief",
+          prompt: "When the Sender didn't show you a number, what did you think that number was likely to be?",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "low", label: "Low (1-4)" },
+            { value: "average", label: "About average (5-6)" },
+            { value: "high", label: "High (7-10)" },
+            { value: "didnt_think", label: "I didn't really think about the hidden numbers" }
+          ]
+        },
+        {
+          id: "adjustment",
+          prompt: "When making your guesses, how much did you adjust for numbers the Sender didn't show?",
+          type: "radio",
+          required: true,
+          options: [
+            { value: "a_lot", label: "A lot -- I guessed well below what was shown" },
+            { value: "somewhat", label: "Somewhat -- I lowered my guess a bit" },
+            { value: "a_little", label: "A little -- I mostly went with what I saw" },
+            { value: "not_at_all", label: "Not at all -- I based my guess on the shown numbers" }
+          ]
+        }
+      ]
     },
 
     // ──────────────────────────────────────────────────────────────────
@@ -434,6 +473,7 @@ var SURVEY_CONFIG = {
       id: "demographics",
       type: "questionnaire",
       title: "About You",
+      minTimeSeconds: 20,
       questions: [
         {
           id: "age",

@@ -122,8 +122,8 @@ EXPERIMENT_PARAMS = {
     },
 
     # Payment (Prolific)
-    'prolific_reward_pence': 200,     # GBP 2.00 base payment
-    'estimated_minutes': 13,
+    'prolific_reward_pence': 300,     # USD 3.00 base payment
+    'estimated_minutes': 15,
 
     # Bonus
     'bonus': {

@@ -163,6 +163,7 @@
     this.prolificPID = params.get('PROLIFIC_PID') || params.get('prolific_pid') || '';
     this.studyID = params.get('STUDY_ID') || params.get('study_id') || '';
     this.sessionID = params.get('SESSION_ID') || params.get('session_id') || '';
+    this.devMode = params.get('dev') === 'true';
 
     // Assign condition
     this.condition = this.assignCondition(
@@ -292,7 +293,8 @@
             totalTrials: trials.length,
             block: block,
             displayFormat: displayFormat,
-            blockId: page.id
+            blockId: page.id,
+            minTimeSeconds: 20
           });
         });
       } else if (page.type === 'transition') {
@@ -344,7 +346,8 @@
         id: 'trial_attn_' + trialPage.trial.id + '_b' + trialPage.block,
         trial: trialPage.trial,
         block: trialPage.block,
-        displayFormat: trialPage.displayFormat
+        displayFormat: trialPage.displayFormat,
+        minTimeSeconds: 20
       });
     }
 
@@ -524,6 +527,7 @@
 
   // ── Min Time Enforcement ───────────────────────────────────────────────
   SurveyEngine.prototype.enforceMinTime = function (seconds) {
+    if (this.devMode) return;  // Skip in dev mode
     var self = this;
     this.minTimeReady = false;
     this.elBtnNext.disabled = true;
@@ -554,23 +558,23 @@
 
   // ── Navigation ─────────────────────────────────────────────────────────
   SurveyEngine.prototype.nextPage = function () {
-    if (!this.minTimeReady) return;
+    if (!this.devMode && !this.minTimeReady) return;
 
     var page = this.pages[this.currentPageIndex];
 
     // Special handling for comprehension
-    if (page.type === 'comprehension') {
+    if (!this.devMode && page.type === 'comprehension') {
       var passed = this.handleComprehensionCheck(page);
       if (!passed) return;
     }
 
     // Special handling for attention checks
-    if (page.type === 'attention_check') {
+    if (!this.devMode && page.type === 'attention_check') {
       this.handleAttentionCheck(page);
     }
 
     // Validate current page
-    if (!this.validatePage()) return;
+    if (!this.devMode && !this.validatePage()) return;
 
     // Collect data from current page
     this.collectPageData(this.currentPageIndex);
@@ -1409,6 +1413,15 @@
     var data = this.getAllData();
     var statusEl = document.getElementById('submit_status');
     var completionUrl = this.config.completionUrl;
+
+    // Dev mode: skip actual submission
+    if (this.devMode) {
+      if (statusEl) {
+        statusEl.className = 'alert alert-success';
+        statusEl.innerHTML = '[DEV MODE] Submission skipped. Data not sent.';
+      }
+      return;
+    }
 
     if (window.DataStorage && this.config.dataEndpoint) {
       window.DataStorage.submit(data, this.config.dataEndpoint, function (success) {
