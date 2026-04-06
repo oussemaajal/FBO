@@ -1529,8 +1529,18 @@
     html += '<p style="margin-top:24px;">Your completion code:</p>';
     html += '<div class="completion-code">' + esc(code) + '</div>';
 
-    // Redirect link (visible backup)
-    if (redirectUrl) {
+    // Part 1 pass: show direct link to Part 2 study if available
+    var part2Url = this.config.part2StudyUrl;
+    if (this.part === 1 && part2Url) {
+      html += '<p style="margin-top:24px;text-align:center;">';
+      html += '<a href="' + esc(part2Url) + '" class="btn btn-primary" ' +
+              'style="display:inline-block;font-size:18px;padding:14px 32px;text-decoration:none;">' +
+              'Continue to Part 2</a>';
+      html += '</p>';
+      html += '<p style="text-align:center;margin-top:8px;color:#6b7280;font-size:14px;">' +
+              'You will also need to submit your completion code above on Prolific.</p>';
+    } else if (redirectUrl) {
+      // Generic "Return to Prolific" fallback
       html += '<p style="margin-top:16px;text-align:center;">';
       html += '<a href="' + esc(redirectUrl) + '" class="btn btn-primary" ' +
               'style="display:inline-block;margin-top:8px;text-decoration:none;">' +

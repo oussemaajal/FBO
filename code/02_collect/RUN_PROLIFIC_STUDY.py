@@ -127,18 +127,25 @@ def cmd_create_two_part(args):
     with open(info_path, 'w') as f:
         json.dump(setup, f, indent=2, default=str)
 
+    part2_prolific_url = f"https://app.prolific.com/studies/{study2_id}/start"
+
     print(f"\n{'='*60}")
     print(f"Two-part study created successfully!")
     print(f"  Group ID:      {group_id}")
     print(f"  Part 1 Study:  {study1_id}")
     print(f"  Part 2 Study:  {study2_id}")
+    print(f"  Part 2 URL:    {part2_prolific_url}")
     print(f"  Setup saved:   {info_path}")
-    print(f"\nIMPORTANT: Set these in Google Apps Script properties:")
+    print(f"\nSTEP 1: Set these in Google Apps Script properties:")
     print(f"  PROLIFIC_API_TOKEN = (your Prolific API token)")
     print(f"  PROLIFIC_GROUP_ID  = {group_id}")
-    print(f"\nTo publish Part 1: python RUN_PROLIFIC_STUDY.py publish {study1_id}")
-    print(f"To publish Part 2: python RUN_PROLIFIC_STUDY.py publish {study2_id}")
-    print(f"  (Publish Part 2 shortly after Part 1 so passers can transition quickly)")
+    print(f"\nSTEP 2: Paste this into survey/js/config.js as part2StudyUrl:")
+    print(f'  part2StudyUrl: "{part2_prolific_url}",')
+    print(f"\nSTEP 3: Deploy the updated config to GitHub Pages")
+    print(f"\nSTEP 4: Publish both studies:")
+    print(f"  python RUN_PROLIFIC_STUDY.py publish {study1_id}")
+    print(f"  python RUN_PROLIFIC_STUDY.py publish {study2_id}")
+    print(f"  (Publish Part 2 first so it's ready when passers arrive)")
 
 
 def cmd_create(args):
