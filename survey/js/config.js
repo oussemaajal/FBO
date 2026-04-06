@@ -573,18 +573,18 @@ var SURVEY_CONFIG = {
       randomize: true,
       trials: [
         // HIGH sender: k=1 extremes (N=2 vs N=8)
-        { id: "t1", N: 2, k: 1, disclosed: [8],       hidden: [3],                    trueAverage: 5.50 },
-        { id: "t2", N: 8, k: 1, disclosed: [8],       hidden: [7, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        { id: "t1", N: 2, k: 1, disclosed: [8],         trueAverage: 6.25 },
+        { id: "t2", N: 8, k: 1, disclosed: [8],         trueAverage: 4.94 },
         // HIGH sender: k=2 extremes (N=4 vs N=10)
-        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],   hidden: [3, 1],                         trueAverage: 4.25 },
-        { id: "t4", N: 10, k: 2, disclosed: [9, 4],   hidden: [4, 3, 3, 2, 2, 1, 1, 1],       trueAverage: 3.00 },
+        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],     trueAverage: 4.50 },
+        { id: "t4", N: 10, k: 2, disclosed: [9, 4],     trueAverage: 3.30 },
         // HIGH sender: k=3 extremes (N=4 vs N=10)
-        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], hidden: [2],                           trueAverage: 5.75 },
-        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], hidden: [4, 3, 3, 2, 2, 1, 1],         trueAverage: 3.70 },
+        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], trueAverage: 5.88 },
+        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], trueAverage: 3.85 },
         // LOW sender: symmetry tests (all N=8)
-        { id: "t7", N: 8, k: 1, disclosed: [4],       hidden: [3, 3, 2, 2, 1, 1, 1], trueAverage: 2.12 },
-        { id: "t8", N: 8, k: 2, disclosed: [5, 2],    hidden: [2, 2, 1, 1, 1, 1],    trueAverage: 1.88 },
-        { id: "t9", N: 8, k: 3, disclosed: [5, 4, 1], hidden: [1, 1, 1, 1, 1],       trueAverage: 1.88 }
+        { id: "t7", N: 8, k: 1, disclosed: [4],         trueAverage: 2.69 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 3],      trueAverage: 2.50 },
+        { id: "t9", N: 8, k: 3, disclosed: [4, 3, 2],   trueAverage: 2.06 }
       ]
     },
 
@@ -641,18 +641,18 @@ var SURVEY_CONFIG = {
       randomize: true,
       trials: [
         // HIGH sender: k=1 extremes (N=2 vs N=8)
-        { id: "t1", N: 2, k: 1, disclosed: [8],       hidden: [3],                    trueAverage: 5.50 },
-        { id: "t2", N: 8, k: 1, disclosed: [8],       hidden: [7, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        { id: "t1", N: 2, k: 1, disclosed: [8],         trueAverage: 6.25 },
+        { id: "t2", N: 8, k: 1, disclosed: [8],         trueAverage: 4.94 },
         // HIGH sender: k=2 extremes (N=4 vs N=10)
-        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],   hidden: [3, 1],                         trueAverage: 4.25 },
-        { id: "t4", N: 10, k: 2, disclosed: [9, 4],   hidden: [4, 3, 3, 2, 2, 1, 1, 1],       trueAverage: 3.00 },
+        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],     trueAverage: 4.50 },
+        { id: "t4", N: 10, k: 2, disclosed: [9, 4],     trueAverage: 3.30 },
         // HIGH sender: k=3 extremes (N=4 vs N=10)
-        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], hidden: [2],                           trueAverage: 5.75 },
-        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], hidden: [4, 3, 3, 2, 2, 1, 1],         trueAverage: 3.70 },
+        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], trueAverage: 5.88 },
+        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], trueAverage: 3.85 },
         // LOW sender: symmetry tests (all N=8)
-        { id: "t7", N: 8, k: 1, disclosed: [4],       hidden: [3, 3, 2, 2, 1, 1, 1], trueAverage: 2.12 },
-        { id: "t8", N: 8, k: 2, disclosed: [5, 2],    hidden: [2, 2, 1, 1, 1, 1],    trueAverage: 1.88 },
-        { id: "t9", N: 8, k: 3, disclosed: [5, 4, 1], hidden: [1, 1, 1, 1, 1],       trueAverage: 1.88 }
+        { id: "t7", N: 8, k: 1, disclosed: [4],         trueAverage: 2.69 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 3],      trueAverage: 2.50 },
+        { id: "t9", N: 8, k: 3, disclosed: [4, 3, 2],   trueAverage: 2.06 }
       ]
     },
 
