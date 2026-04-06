@@ -53,6 +53,8 @@ var SURVEY_CONFIG = {
   // Part 2 (trials): single code
   part2CompletionCode: "PART2FBO",
   part2CompletionUrl: "https://app.prolific.com/submissions/complete?cc=PART2FBO",
+  // Direct link to Part 2 study on Prolific (fill in after running create-two-part)
+  part2StudyUrl: "",  // e.g. "https://app.prolific.com/studies/STUDY_ID/start"
   // Legacy (full survey fallback)
   completionCode: "C1DT2DOB",
   completionUrl: "https://app.prolific.com/submissions/complete?cc=C1DT2DOB",
@@ -434,10 +436,7 @@ var SURVEY_CONFIG = {
       title: "You Passed!",
       body: "<p>Great job -- you understand the game!</p>" +
             "<p><strong>Part 2</strong> is a separate Prolific study (~10 minutes, " +
-            "$2.00 base + up to $2.00 accuracy bonus). It should appear in your " +
-            "Prolific dashboard within a few minutes.</p>" +
-            "<p>Please <strong>submit your completion code on Prolific</strong>, then " +
-            "look for the Part 2 study.</p>"
+            "$2.00 base + up to $2.00 accuracy bonus).</p>"
     }
   ],
 
