@@ -79,8 +79,8 @@ var SURVEY_CONFIG = {
   bonus: {
     enabled: true,
     currency: "USD",
-    baseAmount: 2.00,
-    penaltyPerUnit: 0.40,
+    baseAmount: 1.00,
+    penaltyPerUnit: 0.20,
     floor: 0.00,
     selectionMethod: "random_trial"
   },
@@ -101,7 +101,7 @@ var SURVEY_CONFIG = {
             "<p>If you pass the quiz, you will be invited to <strong>Part 2</strong> " +
             "(a separate Prolific study, ~10 minutes) where you play the game " +
             "for <strong>$2.00 base pay</strong> plus an <strong>accuracy bonus " +
-            "of up to $2.00</strong>.</p>" +
+            "of up to $1.00</strong>.</p>" +
             "<p>You will be paid <strong>$1.00</strong> for completing this part, " +
             "regardless of your quiz result.</p>",
       buttonText: "Let's Go"
@@ -119,7 +119,7 @@ var SURVEY_CONFIG = {
             "<p><strong>Time:</strong> Approximately 5 minutes.</p>" +
             "<p><strong>Compensation:</strong> $1.00 for this part. If you pass the quiz, " +
             "you will be invited to Part 2 (a separate Prolific study, ~10 minutes, " +
-            "$2.00 base + up to $2.00 accuracy bonus).</p>" +
+            "$2.00 base + up to $1.00 accuracy bonus).</p>" +
             "<p><strong>Risks:</strong> No known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
             "We collect your Prolific ID only to process payment.</p>" +
@@ -174,7 +174,7 @@ var SURVEY_CONFIG = {
       body:
         "<p>A random number generator gives the Sender a set of <strong>secret numbers</strong>.</p>" +
         "<p>Each number is between <strong>1 and 10</strong>.</p>" +
-        "<p>The amount of numbers changes each round -- sometimes 4, sometimes 6, sometimes 8.</p>" +
+        "<p>The amount of numbers changes each round -- sometimes just 2, sometimes 4, 8, or even 10.</p>" +
         "<div class='example-box'>" +
           "<div class='example-label'>Example</div>" +
           "<p>The Sender gets <strong>4 numbers</strong>:</p>" +
@@ -265,16 +265,16 @@ var SURVEY_CONFIG = {
       title: "How Your Bonus Works",
       body:
         "<p>You earn more when your guess is <strong>close to the true average</strong>.</p>" +
-        "<p><strong>Bonus = $2.00 &minus; $0.40 &times; |your error|</strong></p>" +
+        "<p><strong>Bonus = $1.00 &minus; $0.20 &times; |your error|</strong></p>" +
         "<p>In Part 2, you play <strong>18 rounds</strong>. At the end, " +
         "one round is randomly selected for your bonus.</p>" +
         "<div class='example-box'>" +
           "<div class='example-label'>Example</div>" +
           "<p>Suppose the true average is <strong>5.00</strong>:</p>" +
           "<ul>" +
-            "<li>You guess <strong>5.0</strong> &rarr; error = 0 &rarr; bonus = <strong>$2.00</strong></li>" +
-            "<li>You guess <strong>6.0</strong> &rarr; error = 1 &rarr; bonus = <strong>$1.60</strong></li>" +
-            "<li>You guess <strong>8.0</strong> &rarr; error = 3 &rarr; bonus = <strong>$0.80</strong></li>" +
+            "<li>You guess <strong>5.0</strong> &rarr; error = 0 &rarr; bonus = <strong>$1.00</strong></li>" +
+            "<li>You guess <strong>6.0</strong> &rarr; error = 1 &rarr; bonus = <strong>$0.80</strong></li>" +
+            "<li>You guess <strong>8.0</strong> &rarr; error = 3 &rarr; bonus = <strong>$0.40</strong></li>" +
             "<li>You guess <strong>10.0</strong> &rarr; error = 5 &rarr; bonus = <strong>$0.00</strong></li>" +
           "</ul>" +
         "</div>",
@@ -307,14 +307,14 @@ var SURVEY_CONFIG = {
         "<div class='example-box'>" +
           "<div class='example-label'>If you guess 6.0 (correct)</div>" +
           "<ul>" +
-            "<li><strong>Your bonus:</strong> $2.00 &minus; $0.40 &times; 0 = <strong>$2.00</strong></li>" +
+            "<li><strong>Your bonus:</strong> $1.00 &minus; $0.20 &times; 0 = <strong>$1.00</strong></li>" +
             "<li><strong>Sender earns:</strong> $0.50 &times; 6.0 = <strong>$3.00</strong></li>" +
           "</ul>" +
         "</div>" +
         "<div class='example-box'>" +
           "<div class='example-label'>If you guess 8.0 (too high)</div>" +
           "<ul>" +
-            "<li><strong>Your bonus:</strong> $2.00 &minus; $0.40 &times; 2 = <strong>$1.20</strong></li>" +
+            "<li><strong>Your bonus:</strong> $1.00 &minus; $0.20 &times; 2 = <strong>$0.60</strong></li>" +
             "<li><strong>Sender earns:</strong> $0.50 &times; 8.0 = <strong>$4.00</strong></li>" +
           "</ul>" +
           "<p class='example-note'>You lose money by guessing too high, but the Sender earns more.</p>" +
@@ -436,7 +436,7 @@ var SURVEY_CONFIG = {
       title: "You Passed!",
       body: "<p>Great job -- you understand the game!</p>" +
             "<p><strong>Part 2</strong> is a separate Prolific study (~10 minutes, " +
-            "$2.00 base + up to $2.00 accuracy bonus).</p>"
+            "$2.00 base + up to $1.00 accuracy bonus).</p>"
     }
   ],
 
@@ -452,8 +452,8 @@ var SURVEY_CONFIG = {
       title: "Welcome to Part 2!",
       subtitle: "The Guessing Game",
       body: "<p>Thank you for returning! This part takes about <strong>12 minutes</strong>.</p>" +
-            "<p>You will receive <strong>$2.50 base payment</strong> plus an " +
-            "<strong>accuracy-based bonus of up to $2.00</strong>.</p>",
+            "<p>You will receive <strong>$2.00 base payment</strong> plus an " +
+            "<strong>accuracy-based bonus of up to $1.00</strong>.</p>",
       buttonText: "Continue"
     },
 
@@ -572,15 +572,19 @@ var SURVEY_CONFIG = {
       block: 1,
       randomize: true,
       trials: [
-        { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
-        { id: "t2", N: 4, k: 2, disclosed: [6, 5],     hidden: [2, 1],                trueAverage: 3.50 },
-        { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
-        { id: "t4", N: 6, k: 1, disclosed: [5],        hidden: [4, 3, 2, 2, 1],       trueAverage: 2.83 },
-        { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
-        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
-        { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
-        { id: "t8", N: 8, k: 2, disclosed: [5, 4],     hidden: [4, 3, 2, 2, 1, 1],    trueAverage: 2.75 },
-        { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
+        // HIGH sender: k=1 extremes (N=2 vs N=8)
+        { id: "t1", N: 2, k: 1, disclosed: [8],       hidden: [3],                    trueAverage: 5.50 },
+        { id: "t2", N: 8, k: 1, disclosed: [8],       hidden: [7, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        // HIGH sender: k=2 extremes (N=4 vs N=10)
+        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],   hidden: [3, 1],                         trueAverage: 4.25 },
+        { id: "t4", N: 10, k: 2, disclosed: [9, 4],   hidden: [4, 3, 3, 2, 2, 1, 1, 1],       trueAverage: 3.00 },
+        // HIGH sender: k=3 extremes (N=4 vs N=10)
+        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], hidden: [2],                           trueAverage: 5.75 },
+        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], hidden: [4, 3, 3, 2, 2, 1, 1],         trueAverage: 3.70 },
+        // LOW sender: symmetry tests (all N=8)
+        { id: "t7", N: 8, k: 1, disclosed: [4],       hidden: [3, 3, 2, 2, 1, 1, 1], trueAverage: 2.12 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 2],    hidden: [2, 2, 1, 1, 1, 1],    trueAverage: 1.88 },
+        { id: "t9", N: 8, k: 3, disclosed: [5, 4, 1], hidden: [1, 1, 1, 1, 1],       trueAverage: 1.88 }
       ]
     },
 
@@ -636,15 +640,19 @@ var SURVEY_CONFIG = {
       block: 2,
       randomize: true,
       trials: [
-        { id: "t1", N: 4, k: 1, disclosed: [8],        hidden: [4, 3, 1],             trueAverage: 4.00 },
-        { id: "t2", N: 4, k: 2, disclosed: [6, 5],     hidden: [2, 1],                trueAverage: 3.50 },
-        { id: "t3", N: 4, k: 3, disclosed: [10, 7, 6], hidden: [1],                   trueAverage: 6.00 },
-        { id: "t4", N: 6, k: 1, disclosed: [5],        hidden: [4, 3, 2, 2, 1],       trueAverage: 2.83 },
-        { id: "t5", N: 6, k: 2, disclosed: [8, 7],     hidden: [5, 3, 2, 1],          trueAverage: 4.33 },
-        { id: "t6", N: 6, k: 3, disclosed: [9, 8, 5],  hidden: [3, 2, 1],             trueAverage: 4.67 },
-        { id: "t7", N: 8, k: 1, disclosed: [9],        hidden: [6, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
-        { id: "t8", N: 8, k: 2, disclosed: [5, 4],     hidden: [4, 3, 2, 2, 1, 1],    trueAverage: 2.75 },
-        { id: "t9", N: 8, k: 3, disclosed: [8, 7, 6],  hidden: [5, 3, 2, 2, 1],       trueAverage: 4.25 }
+        // HIGH sender: k=1 extremes (N=2 vs N=8)
+        { id: "t1", N: 2, k: 1, disclosed: [8],       hidden: [3],                    trueAverage: 5.50 },
+        { id: "t2", N: 8, k: 1, disclosed: [8],       hidden: [7, 5, 4, 3, 2, 1, 1], trueAverage: 3.88 },
+        // HIGH sender: k=2 extremes (N=4 vs N=10)
+        { id: "t3", N: 4,  k: 2, disclosed: [9, 4],   hidden: [3, 1],                         trueAverage: 4.25 },
+        { id: "t4", N: 10, k: 2, disclosed: [9, 4],   hidden: [4, 3, 3, 2, 2, 1, 1, 1],       trueAverage: 3.00 },
+        // HIGH sender: k=3 extremes (N=4 vs N=10)
+        { id: "t5", N: 4,  k: 3, disclosed: [10, 7, 4], hidden: [2],                           trueAverage: 5.75 },
+        { id: "t6", N: 10, k: 3, disclosed: [10, 7, 4], hidden: [4, 3, 3, 2, 2, 1, 1],         trueAverage: 3.70 },
+        // LOW sender: symmetry tests (all N=8)
+        { id: "t7", N: 8, k: 1, disclosed: [4],       hidden: [3, 3, 2, 2, 1, 1, 1], trueAverage: 2.12 },
+        { id: "t8", N: 8, k: 2, disclosed: [5, 2],    hidden: [2, 2, 1, 1, 1, 1],    trueAverage: 1.88 },
+        { id: "t9", N: 8, k: 3, disclosed: [5, 4, 1], hidden: [1, 1, 1, 1, 1],       trueAverage: 1.88 }
       ]
     },
 
@@ -792,8 +800,8 @@ var SURVEY_CONFIG = {
       subtitle: "Thank you for participating.",
       body: "<p>In this study, you will play a short estimation game. " +
             "It takes approximately <strong>15 minutes</strong> to complete.</p>" +
-            "<p>You will receive <strong>$3.00 base payment</strong> plus an " +
-            "<strong>accuracy-based bonus of up to $2.00</strong> depending on how " +
+            "<p>You will receive <strong>$2.00 base payment</strong> plus an " +
+            "<strong>accuracy-based bonus of up to $1.00</strong> depending on how " +
             "well you perform.</p>" +
             "<p>Your responses are anonymous and will be used for academic research only.</p>" +
             "<p>Please complete this study on a <strong>desktop or laptop computer</strong> " +
@@ -813,8 +821,8 @@ var SURVEY_CONFIG = {
             "<p><strong>What you will do:</strong> You will play an estimation game " +
             "involving numbers and answer a few questions afterward.</p>" +
             "<p><strong>Time:</strong> Approximately 15 minutes.</p>" +
-            "<p><strong>Compensation:</strong> You will receive a $3.00 base payment " +
-            "plus an accuracy-based bonus of up to $2.00 depending on how close your " +
+            "<p><strong>Compensation:</strong> You will receive a $2.00 base payment " +
+            "plus an accuracy-based bonus of up to $1.00 depending on how close your " +
             "guesses are to the true averages.</p>" +
             "<p><strong>Risks:</strong> There are no known risks beyond those of everyday life.</p>" +
             "<p><strong>Confidentiality:</strong> Your responses are anonymous. " +
@@ -859,7 +867,7 @@ var SURVEY_CONFIG = {
         "between <strong>1 and 10</strong>.</p>" +
 
         "<p>The number of secret numbers <strong>changes each round</strong>. " +
-        "Sometimes the Sender gets 4 numbers, sometimes 6, sometimes 8.</p>" +
+        "Sometimes the Sender gets just 2 numbers, sometimes 4, 8, or even 10.</p>" +
 
         "<div class='sender-visual'>" +
           "<div class='sender-visual-label'>Example: The Sender gets 2 secret numbers</div>" +
