@@ -9,7 +9,8 @@ Usage:
     python RUN_PROLIFIC_STUDY.py status STUDY_ID           # Check status & submissions
     python RUN_PROLIFIC_STUDY.py submissions STUDY_ID      # List all submissions
     python RUN_PROLIFIC_STUDY.py approve STUDY_ID          # Approve all awaiting submissions
-    python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE # Pay bonuses from CSV
+    python RUN_PROLIFIC_STUDY.py bonus STUDY_ID            # Pay bonuses (auto from Google Sheets)
+    python RUN_PROLIFIC_STUDY.py bonus STUDY_ID --csv FILE # Pay bonuses from manual CSV
     python RUN_PROLIFIC_STUDY.py pause STUDY_ID            # Pause an active study
     python RUN_PROLIFIC_STUDY.py list                      # List all studies
 
@@ -103,7 +104,7 @@ def cmd_create_two_part(args):
             "strategically revealed information. "
             f"Takes about {part2_minutes} minutes. "
             f"You will receive GBP {part2_reward/100:.2f} base payment "
-            "plus an accuracy-based bonus of up to $2.00."
+            "plus an accuracy-based bonus of up to $1.00."
         ),
         external_study_url=part2_url,
         total_available_places=total,
@@ -186,8 +187,8 @@ def cmd_create(args):
         description=(
             "A short estimation game where you guess averages based on "
             "strategically revealed information. Takes about 15 minutes. "
-            "You will receive $3.00 base payment plus an accuracy-based "
-            "bonus of up to $2.00 depending on how well you perform."
+            "You will receive $2.00 base payment plus an accuracy-based "
+            "bonus of up to $1.00 depending on how well you perform."
         ),
         external_study_url=external_url,
         total_available_places=total,
@@ -279,16 +280,101 @@ def cmd_approve(args):
 
 
 def cmd_bonus(args):
-    """Pay bonuses from a CSV file."""
+    """Pay bonuses -- auto-download from Google Sheets or use a CSV file."""
+    import pandas as pd
+
     if args.dry_run:
         set_dry_run(True)
-    if not args.csv:
-        print("ERROR: --csv argument required. Provide a CSV with columns: prolific_pid, bonus_pence")
-        return
+
     client = ProlificClient()
-    result = client.pay_bonuses_from_csv(args.study_id, args.csv)
-    print(f"\nDone. Paid {result['total_paid']} bonuses, "
-          f"total GBP {result['total_amount_pence'] / 100:.2f}")
+
+    if args.csv:
+        # Manual CSV path provided
+        print(f"Reading bonuses from CSV: {args.csv}")
+        result = client.pay_bonuses_from_csv(args.study_id, args.csv)
+        print(f"\nDone. Paid {result['total_paid']} bonuses, "
+              f"total GBP {result['total_amount_pence'] / 100:.2f}")
+        return
+
+    # Auto-download from Google Sheets
+    sheet_id = SURVEY_CONFIG.get('google_sheet_id')
+    if not sheet_id:
+        print("ERROR: google_sheet_id not set in config.py SURVEY_CONFIG.")
+        print("  Either set it or provide --csv with a manual file.")
+        return
+
+    print(f"Downloading response data from Google Sheets...")
+    export_url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv"
+    df = pd.read_csv(export_url)
+    print(f"  Downloaded {len(df)} rows")
+
+    # Filter to Part 2 responses with bonus data
+    bonus_col = 'bonus.amount'
+    pid_col = 'prolificPID'
+
+    if bonus_col not in df.columns:
+        print(f"ERROR: Column '{bonus_col}' not found in Sheet.")
+        print(f"  Available columns containing 'bonus': {[c for c in df.columns if 'bonus' in c.lower()]}")
+        return
+    if pid_col not in df.columns:
+        print(f"ERROR: Column '{pid_col}' not found in Sheet.")
+        return
+
+    # Keep only Part 2 rows with valid bonus
+    if 'part' in df.columns:
+        df = df[df['part'] == 2]
+        print(f"  Filtered to Part 2: {len(df)} rows")
+
+    df = df[[pid_col, bonus_col]].dropna()
+    df[bonus_col] = pd.to_numeric(df[bonus_col], errors='coerce')
+    df = df.dropna()
+    df = df[df[bonus_col] > 0]
+
+    if df.empty:
+        print("No participants with positive bonus found.")
+        return
+
+    # Convert USD to pence (1 USD ~ 1 GBP for Prolific, which uses pence)
+    # Prolific bonus API takes amount in pence
+    df['bonus_pence'] = (df[bonus_col] * 100).round().astype(int)
+
+    print(f"\nBonus summary ({len(df)} participants):")
+    print(f"  Mean: ${df[bonus_col].mean():.2f}")
+    print(f"  Min:  ${df[bonus_col].min():.2f}")
+    print(f"  Max:  ${df[bonus_col].max():.2f}")
+    print(f"  Total: ${df[bonus_col].sum():.2f}")
+    print()
+
+    # Save CSV for audit trail
+    audit_path = PATHS['raw_prolific'] / f"bonuses_{args.study_id}.csv"
+    audit_path.parent.mkdir(parents=True, exist_ok=True)
+    df[[pid_col, bonus_col, 'bonus_pence']].to_csv(audit_path, index=False)
+    print(f"  Audit CSV saved: {audit_path}")
+
+    if not args.dry_run:
+        confirm = input(f"\nPay {len(df)} bonuses totaling ${df[bonus_col].sum():.2f}? (yes/no): ")
+        if confirm.strip().lower() != 'yes':
+            print("Aborted.")
+            return
+
+    total_paid = 0
+    total_amount = 0
+    errors = []
+    for _, row in df.iterrows():
+        pid = row[pid_col]
+        amount = int(row['bonus_pence'])
+        try:
+            client.pay_bonus(args.study_id, pid, amount)
+            total_paid += 1
+            total_amount += amount
+            print(f"  Paid {amount}p to {pid}")
+        except Exception as e:
+            errors.append({'pid': pid, 'amount': amount, 'error': str(e)})
+            print(f"  ERROR paying {pid}: {e}")
+
+    print(f"\nDone. Paid {total_paid} bonuses, total GBP {total_amount / 100:.2f}")
+    if errors:
+        print(f"  Errors: {len(errors)}")
 
 
 if __name__ == "__main__":
@@ -333,9 +419,9 @@ if __name__ == "__main__":
     sub_approve.add_argument('study_id', help='Study ID')
 
     # bonus
-    sub_bonus = subparsers.add_parser('bonus', help='Pay bonuses from CSV')
+    sub_bonus = subparsers.add_parser('bonus', help='Pay bonuses (auto from Google Sheets or --csv)')
     sub_bonus.add_argument('study_id', help='Study ID')
-    sub_bonus.add_argument('--csv', required=True, help='CSV with prolific_pid, bonus_pence')
+    sub_bonus.add_argument('--csv', required=False, help='Optional CSV with prolific_pid, bonus_pence (auto-downloads from Sheets if omitted)')
 
     args = parser.parse_args()
 

@@ -123,19 +123,19 @@ EXPERIMENT_PARAMS = {
 
     # Payment (Prolific) -- two-part study
     # Part 1: instructions + quiz (~5 min, $1.00)
-    # Part 2: trials + debrief (~12 min, $2.50 base + up to $2.00 bonus)
+    # Part 2: trials + debrief (~10 min, $2.00 base + up to $1.00 bonus)
     'part1_reward_pence': 100,        # GBP ~1.00
     'part1_estimated_minutes': 5,
-    'part2_reward_pence': 250,        # GBP ~2.50
-    'part2_estimated_minutes': 12,
+    'part2_reward_pence': 200,        # GBP ~2.00
+    'part2_estimated_minutes': 10,
     # Legacy (full survey, kept for backward compat)
-    'prolific_reward_pence': 300,     # USD 3.00 base payment
-    'estimated_minutes': 15,
+    'prolific_reward_pence': 200,     # USD 2.00 base payment
+    'estimated_minutes': 12,
 
     # Bonus
     'bonus': {
-        'base_amount_usd': 2.00,
-        'penalty_per_unit': 0.40,
+        'base_amount_usd': 1.00,
+        'penalty_per_unit': 0.20,
         'floor': 0.00,
     },
 }
